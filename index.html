@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Normandie Étanchéité — Expert en Étanchéité en Normandie</title>
+  <meta name="description" content="Normandie Étanchéité, expert en étanchéité toiture-terrasse, façades, infiltrations et sous-sol en Normandie. Devis gratuit au 06-51-17-45-64.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0d1b2a;
+      --blue:    #1b3a5c;
+      --accent:  #e8a020;
+      --accent2: #f5bc55;
+      --light:   #f0f4f8;
+      --white:   #ffffff;
+      --text:    #334155;
+      --muted:   #64748b;
+      --border:  #e2e8f0;
+      --grad1: linear-gradient(135deg, #0d1b2a 0%, #1b3a5c 50%, #1e4d7b 100%);
+      --grad2: linear-gradient(135deg, #e8a020 0%, #f5bc55 100%);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,.08);
+      --shadow-md: 0 8px 30px rgba(0,0,0,.12);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,.2);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    h1,h2,h3,h4 { font-family: 'Syne', sans-serif; line-height: 1.2; }
+    a { text-decoration: none; color: inherit; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* NAVBAR */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000; padding: 20px 0;
+      transition: all .4s ease;
+    }
+    #navbar.scrolled {
+      background: rgba(13,27,42,.95);
+      backdrop-filter: blur(12px);
+      padding: 12px 0;
+      box-shadow: 0 4px 30px rgba(0,0,0,.3);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; }
+    .nav-logo .logo-icon {
+      width: 44px; height: 44px;
+      background: var(--grad2);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 15px rgba(232,160,32,.4);
+    }
+    .nav-logo .logo-text {
+      font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: white; line-height: 1.2;
+    }
+    .nav-logo .logo-text span {
+      display: block; font-size: 11px; font-weight: 400;
+      color: var(--accent2); letter-spacing: 2px; text-transform: uppercase;
+    }
+    .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,.85); font-size: 14px; font-weight: 500;
+      transition: color .2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 2px; background: var(--accent); transition: width .3s;
+    }
+    .nav-links a:hover { color: white; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      display: flex !important; align-items: center; gap: 8px;
+      background: var(--grad2) !important; color: var(--navy) !important;
+      padding: 10px 22px; border-radius: 50px;
+      font-weight: 700 !important;
+      box-shadow: 0 4px 15px rgba(232,160,32,.4);
+      transition: transform .2s, box-shadow .2s !important;
+    }
+    .nav-cta:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 25px rgba(232,160,32,.5) !important; }
+    .nav-cta::after { display: none !important; }
+    .nav-burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .nav-burger span { display: block; width: 26px; height: 2px; background: white; border-radius: 2px; transition: all .3s; }
+
+    /* HERO */
+    #hero {
+      min-height: 100vh; position: relative;
+      display: flex; align-items: center; overflow: hidden;
+    }
+    .hero-bg { position: absolute; inset: 0; background: var(--grad1); z-index: 0; }
+    .hero-bg::before {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 80%, rgba(59,130,246,.18) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(232,160,32,.12) 0%, transparent 50%);
+    }
+    .hero-shape {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: .4;
+      animation: heroFloat 8s ease-in-out infinite;
+    }
+    .hero-shape-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(59,130,246,.4), transparent); top: -150px; right: -100px; }
+    .hero-shape-2 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(232,160,32,.3), transparent); bottom: 80px; left: -80px; animation-delay: 3s; }
+    @keyframes heroFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-30px) scale(1.05); } }
+
+    .hero-content { position: relative; z-index: 1; max-width: 680px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(232,160,32,.15); border: 1px solid rgba(232,160,32,.3);
+      color: var(--accent2); padding: 8px 18px; border-radius: 50px;
+      font-size: 13px; font-weight: 500; letter-spacing: .5px; margin-bottom: 28px;
+      backdrop-filter: blur(8px);
+    }
+    .hero-title { font-size: clamp(44px, 6vw, 74px); font-weight: 800; color: white; line-height: 1.08; margin-bottom: 24px; }
+    .hero-title .gradient-text {
+      display: block;
+      background: linear-gradient(135deg, #e8a020 0%, #f5bc55 50%, #fcd34d 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-desc { font-size: 18px; color: rgba(255,255,255,.75); max-width: 520px; margin-bottom: 40px; line-height: 1.75; }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 64px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--grad2); color: var(--navy);
+      padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 16px;
+      box-shadow: 0 8px 30px rgba(232,160,32,.4); transition: transform .2s, box-shadow .2s;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(232,160,32,.5); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.3);
+      color: white; padding: 16px 32px; border-radius: 50px; font-weight: 600; font-size: 16px;
+      backdrop-filter: blur(8px); transition: all .2s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,.2); border-color: white; }
+    .hero-stats { display: flex; gap: 0; }
+    .hero-stat { display: flex; flex-direction: column; padding: 0 32px; border-right: 1px solid rgba(255,255,255,.2); }
+    .hero-stat:first-child { padding-left: 0; }
+    .hero-stat:last-child { border-right: none; }
+    .hero-stat .num { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; color: white; line-height: 1; }
+    .hero-stat .num em { color: var(--accent); font-style: normal; }
+    .hero-stat .label { font-size: 13px; color: rgba(255,255,255,.58); margin-top: 5px; }
+
+    .hero-visual {
+      position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+      width: 42%; z-index: 1; display: flex; flex-direction: column; gap: 18px;
+      pointer-events: none;
+    }
+    .hero-card {
+      background: rgba(255,255,255,.07); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,.12); border-radius: 22px;
+      padding: 26px 28px; animation: slideRight .8s ease both;
+    }
+    .hero-card:nth-child(1) { animation-delay: .3s; margin-left: 60px; }
+    .hero-card:nth-child(2) { animation-delay: .5s; margin-left: 0; }
+    .hero-card:nth-child(3) { animation-delay: .7s; margin-left: 80px; }
+    @keyframes slideRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+    .hero-card-icon {
+      width: 46px; height: 46px; background: var(--grad2); border-radius: 13px;
+      display: flex; align-items: center; justify-content: center; font-size: 21px; margin-bottom: 14px;
+    }
+    .hero-card h4 { color: white; font-size: 16px; margin-bottom: 6px; }
+    .hero-card p { color: rgba(255,255,255,.58); font-size: 13px; line-height: 1.5; }
+
+    .scroll-ind {
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 10px; z-index: 1;
+      animation: fadeUp 1s ease 1.2s both;
+    }
+    .scroll-ind span { font-size: 11px; color: rgba(255,255,255,.45); letter-spacing: 3px; text-transform: uppercase; }
+    .scroll-mouse {
+      width: 24px; height: 38px; border: 2px solid rgba(255,255,255,.3); border-radius: 12px; position: relative;
+    }
+    .scroll-mouse::before {
+      content: ''; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 8px; background: var(--accent); border-radius: 2px;
+      animation: scrollBall 2s ease-in-out infinite;
+    }
+    @keyframes scrollBall { 0%,100% { transform: translateX(-50%) translateY(0); opacity: 1; } 80% { transform: translateX(-50%) translateY(14px); opacity: 0; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* SECTIONS */
+    section { padding: 100px 0; }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(232,160,32,.1); color: var(--accent);
+      border: 1px solid rgba(232,160,32,.25); padding: 6px 16px;
+      border-radius: 50px; font-size: 12px; font-weight: 600;
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px;
+    }
+    .section-title { font-size: clamp(32px, 4vw, 50px); font-weight: 800; color: var(--navy); margin-bottom: 16px; }
+    .section-title .accent { color: var(--accent); }
+    .section-desc { font-size: 17px; color: var(--muted); max-width: 580px; line-height: 1.75; }
+    .section-header { margin-bottom: 64px; }
+    .section-header.centered { text-align: center; }
+    .section-header.centered .section-desc { margin: 0 auto; }
+
+    /* SERVICES */
+    #services { background: var(--light); position: relative; overflow: hidden; }
+    #services::before {
+      content: ''; position: absolute; top: -200px; right: -200px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(232,160,32,.07), transparent); border-radius: 50%;
+    }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .service-card {
+      background: white; border-radius: 26px; padding: 38px 32px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+      transition: transform .3s, box-shadow .3s, border-color .3s; cursor: default;
+    }
+    .service-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+      background: var(--grad2); transform: scaleX(0); transform-origin: left; transition: transform .4s ease;
+    }
+    .service-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); border-color: transparent; }
+    .service-card:hover::before { transform: scaleX(1); }
+    .service-icon {
+      width: 66px; height: 66px; border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; margin-bottom: 26px; transition: transform .3s;
+    }
+    .service-card:hover .service-icon { transform: scale(1.1) rotate(5deg); }
+    .icon-blue   { background: rgba(30,58,138,.07); }
+    .icon-orange { background: rgba(232,160,32,.1); }
+    .icon-teal   { background: rgba(20,184,166,.08); }
+    .icon-purple { background: rgba(109,40,217,.07); }
+    .icon-green  { background: rgba(34,197,94,.08); }
+    .icon-red    { background: rgba(239,68,68,.07); }
+    .service-card h3 { font-size: 21px; color: var(--navy); margin-bottom: 12px; }
+    .service-card p { color: var(--muted); font-size: 14px; line-height: 1.7; margin-bottom: 24px; }
+    .service-list { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .service-list li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); }
+    .service-list li::before {
+      content: '\2713'; display: flex; align-items: center; justify-content: center;
+      width: 21px; height: 21px; background: var(--grad2); color: var(--navy);
+      border-radius: 50%; font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+
+    /* CHIFFRES */
+    #chiffres { background: var(--grad1); padding: 90px 0; position: relative; overflow: hidden; }
+    .chiffres-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+    .chiffre-item {
+      text-align: center; padding: 52px 32px;
+      background: rgba(255,255,255,.03); border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .chiffre-item:last-child { border-right: none; }
+    .chiffre-icon { font-size: 36px; display: block; margin-bottom: 18px; }
+    .chiffre-num { font-family: 'Syne', sans-serif; font-size: 58px; font-weight: 800; color: white; line-height: 1; margin-bottom: 10px; }
+    .chiffre-num em { color: var(--accent); font-style: normal; }
+    .chiffre-label { font-size: 15px; color: rgba(255,255,255,.62); font-weight: 500; }
+
+    /* POURQUOI */
+    #pourquoi { background: white; }
+    .pourquoi-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .pourquoi-visual { position: relative; }
+    .pourquoi-main-card {
+      background: var(--grad1); border-radius: 32px; padding: 52px 44px;
+      color: white; position: relative; overflow: hidden;
+    }
+    .pourquoi-main-card::before {
+      content: ''; position: absolute; top: -70px; right: -70px;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(232,160,32,.18), transparent); border-radius: 50%;
+    }
+    .pourquoi-main-card .big-icon { font-size: 66px; margin-bottom: 22px; display: block; }
+    .pourquoi-main-card h3 { font-size: 30px; margin-bottom: 14px; }
+    .pourquoi-main-card p { color: rgba(255,255,255,.7); font-size: 15px; line-height: 1.75; }
+    .pourquoi-badge {
+      position: absolute; bottom: -22px; right: 44px;
+      background: var(--grad2); color: var(--navy); border-radius: 18px;
+      padding: 18px 28px; font-weight: 700; font-size: 14px;
+      box-shadow: 0 12px 35px rgba(232,160,32,.45); text-align: center;
+    }
+    .pourquoi-badge .badge-num { font-size: 30px; font-family: 'Syne', sans-serif; display: block; line-height: 1; margin-bottom: 2px; }
+    .pourquoi-items { display: flex; flex-direction: column; gap: 20px; }
+    .pourquoi-item {
+      display: flex; gap: 20px; align-items: flex-start;
+      padding: 26px; border-radius: 18px; border: 1px solid var(--border);
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .pourquoi-item:hover { border-color: var(--accent); box-shadow: 0 8px 30px rgba(232,160,32,.1); }
+    .pourquoi-item-icon {
+      width: 54px; height: 54px; background: var(--grad2); border-radius: 15px;
+      display: flex; align-items: center; justify-content: center; font-size: 23px; flex-shrink: 0;
+    }
+    .pourquoi-item-content h4 { font-size: 18px; color: var(--navy); margin-bottom: 6px; }
+    .pourquoi-item-content p { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* PROCESSUS */
+    #processus { background: var(--light); }
+    .processus-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; position: relative; }
+    .processus-steps::before {
+      content: ''; position: absolute; top: 40px; left: calc(12.5% + 20px); right: calc(12.5% + 20px);
+      height: 2px; background: var(--accent); opacity: .35; z-index: 0;
+    }
+    .step-card { text-align: center; padding: 32px 24px; position: relative; z-index: 1; }
+    .step-num {
+      width: 80px; height: 80px; background: var(--grad2); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; color: var(--navy);
+      margin: 0 auto 22px; box-shadow: 0 8px 25px rgba(232,160,32,.35);
+    }
+    .step-card h3 { font-size: 18px; color: var(--navy); margin-bottom: 10px; }
+    .step-card p { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    /* ZONE */
+    #zone { background: white; }
+    .zone-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: start; }
+    .zone-departments { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+    .zone-dept {
+      display: flex; align-items: center; gap: 18px;
+      padding: 18px 22px; background: var(--light); border-radius: 16px;
+      border: 1px solid var(--border); transition: border-color .3s, transform .25s;
+    }
+    .zone-dept:hover { border-color: var(--accent); transform: translateX(8px); }
+    .zone-dept-icon {
+      width: 42px; height: 42px; background: var(--grad2); border-radius: 11px;
+      display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
+    }
+    .zone-dept h4 { font-size: 15px; color: var(--navy); margin-bottom: 3px; }
+    .zone-dept p { font-size: 12px; color: var(--muted); }
+    .zone-cities-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .city-tag {
+      background: var(--light); border: 1px solid var(--border); color: var(--text);
+      padding: 6px 15px; border-radius: 50px; font-size: 13px; transition: all .2s;
+    }
+    .city-tag:hover { background: var(--navy); color: white; border-color: var(--navy); }
+    .zone-map-box {
+      background: var(--light); border-radius: 28px; padding: 40px;
+      border: 1px solid var(--border);
+    }
+    .zone-map-inner {
+      width: 100%; aspect-ratio: 1;
+      background: linear-gradient(145deg, #e8f4f8, #dbeafe);
+      border-radius: 20px; overflow: hidden;
+    }
+    .zone-map-inner svg { width: 100%; height: 100%; }
+
+    /* TEMOIGNAGES */
+    #temoignages { background: var(--light); }
+    .temoignages-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .temoignage-card {
+      background: white; border-radius: 26px; padding: 34px;
+      border: 1px solid var(--border); transition: transform .3s, box-shadow .3s;
+    }
+    .temoignage-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+    .temoignage-card.featured { background: var(--grad1); border-color: transparent; }
+    .quote-icon { font-size: 48px; color: var(--accent); line-height: .8; margin-bottom: 14px; font-family: Georgia, serif; }
+    .stars { color: var(--accent); font-size: 15px; margin-bottom: 14px; }
+    .temoignage-text { font-size: 15px; line-height: 1.75; color: var(--text); margin-bottom: 26px; }
+    .temoignage-card.featured .temoignage-text { color: rgba(255,255,255,.82); }
+    .temoignage-author { display: flex; align-items: center; gap: 12px; }
+    .author-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; flex-shrink: 0;
+    }
+    .author-info .name { font-size: 14px; font-weight: 600; color: var(--navy); }
+    .temoignage-card.featured .author-info .name { color: white; }
+    .author-info .location { font-size: 12px; color: var(--muted); }
+    .temoignage-card.featured .author-info .location { color: rgba(255,255,255,.55); }
+
+    /* CONTACT */
+    #contact { background: white; }
+    .contact-layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 64px; align-items: start; }
+    .contact-info { display: flex; flex-direction: column; gap: 28px; }
+    .contact-card { display: flex; gap: 18px; align-items: flex-start; }
+    .contact-card-icon {
+      width: 56px; height: 56px; background: var(--grad1); border-radius: 16px;
+      display: flex; align-items: center; justify-content: center; font-size: 23px; flex-shrink: 0;
+    }
+    .contact-card-content .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+    .contact-card-content .value { font-size: 18px; font-weight: 600; color: var(--navy); }
+    .contact-card-content .value a { color: inherit; transition: color .2s; }
+    .contact-card-content .value a:hover { color: var(--accent); }
+    .contact-card-content .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .contact-urgence {
+      background: var(--navy); border-radius: 22px; padding: 30px; color: white;
+    }
+    .contact-urgence .urg-tag {
+      display: inline-block; background: var(--accent); color: var(--navy);
+      padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .contact-urgence h4 { font-size: 20px; margin-bottom: 10px; }
+    .contact-urgence p { font-size: 14px; color: rgba(255,255,255,.65); margin-bottom: 18px; }
+    .contact-urgence a {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--grad2); color: var(--navy); padding: 13px 26px;
+      border-radius: 50px; font-weight: 700; font-size: 16px;
+    }
+    .contact-form { background: var(--light); border-radius: 30px; padding: 46px; border: 1px solid var(--border); }
+    .contact-form h3 { font-size: 28px; color: var(--navy); margin-bottom: 30px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group.full { grid-column: span 2; }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 14px 18px; border: 1.5px solid var(--border);
+      border-radius: 12px; font-size: 15px; color: var(--text);
+      background: white; font-family: 'Inter', sans-serif;
+      transition: border-color .2s, box-shadow .2s; outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232,160,32,.12);
+    }
+    .form-textarea { resize: vertical; min-height: 120px; }
+    .form-submit {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 17px; background: var(--grad2); color: var(--navy);
+      border: none; border-radius: 13px; font-size: 16px; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      transition: transform .2s, box-shadow .2s; box-shadow: 0 6px 20px rgba(232,160,32,.3);
+    }
+    .form-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(232,160,32,.4); }
+    .form-note { text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px; }
+
+    /* FOOTER */
+    footer { background: var(--navy); color: white; padding: 72px 0 30px; }
+    .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 52px; }
+    .footer-brand p { color: rgba(255,255,255,.58); font-size: 14px; line-height: 1.75; margin: 16px 0 26px; max-width: 290px; }
+    .footer-contact-items { display: flex; flex-direction: column; gap: 12px; }
+    .footer-contact-item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(255,255,255,.65); }
+    .footer-contact-item span:first-child { color: var(--accent); font-size: 17px; }
+    .footer-col h4 { font-size: 15px; font-weight: 700; margin-bottom: 22px; color: white; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .footer-links li a { font-size: 14px; color: rgba(255,255,255,.58); transition: color .2s; display: flex; align-items: center; gap: 8px; }
+    .footer-links li a:hover { color: var(--accent); }
+    .footer-links li a::before { content: '\2192'; font-size: 12px; color: var(--accent); }
+    .footer-divider { height: 1px; background: rgba(255,255,255,.08); margin-bottom: 28px; }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer-bottom p { font-size: 13px; color: rgba(255,255,255,.42); }
+    .footer-bottom p em { color: var(--accent); font-style: normal; }
+    .certif-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+    .certif-badge { background: rgba(255,255,255,.07); border-radius: 8px; padding: 8px 13px; font-size: 12px; color: rgba(255,255,255,.65); }
+
+    /* FLOATING CTA */
+    .float-cta { position: fixed; bottom: 30px; right: 30px; z-index: 999; }
+    .float-btn {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--grad2); color: var(--navy); padding: 14px 26px;
+      border-radius: 50px; font-weight: 700; font-size: 15px;
+      box-shadow: 0 8px 30px rgba(232,160,32,.5); transition: transform .2s, box-shadow .2s;
+      white-space: nowrap;
+    }
+    .float-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(232,160,32,.6); }
+    .float-btn .f-icon {
+      width: 36px; height: 36px; background: var(--navy); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1080px) {
+      .hero-visual { display: none; }
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .pourquoi-layout { grid-template-columns: 1fr; }
+      .zone-layout { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      .chiffres-grid { grid-template-columns: repeat(2, 1fr); }
+      .chiffre-item:nth-child(2) { border-right: none; }
+      .chiffre-item:nth-child(1), .chiffre-item:nth-child(2) { border-bottom: 1px solid rgba(255,255,255,.08); }
+      .temoignages-grid { grid-template-columns: 1fr 1fr; }
+      .processus-steps { grid-template-columns: repeat(2, 1fr); }
+      .processus-steps::before { display: none; }
+      .contact-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      section { padding: 70px 0; }
+      .nav-links { display: none; }
+      .nav-burger { display: flex; }
+      .services-grid { grid-template-columns: 1fr; }
+      .temoignages-grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+      .hero-stats { flex-direction: column; gap: 20px; }
+      .hero-stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,.18); padding: 0 0 18px; }
+      .hero-stat:last-child { border-bottom: none; }
+      .footer-top { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+      .float-cta { bottom: 16px; right: 16px; }
+      .float-btn span { display: none; }
+      .float-btn { padding: 14px; border-radius: 50%; }
+      .float-btn .f-icon { width: 46px; height: 46px; font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <div class="logo-icon">&#x1F6E1;&#xFE0F;</div>
+        <div class="logo-text">
+          Normandie Étanchéité
+          <span>Expert en Étanchéité</span>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#pourquoi">Nos atouts</a></li>
+        <li><a href="#zone">Zone d'intervention</a></li>
+        <li><a href="#temoignages">Avis</a></li>
+        <li><a href="#contact" class="nav-cta">&#x1F4DE; Devis gratuit</a></li>
+      </ul>
+      <div class="nav-burger" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section id="hero">
+  <div class="hero-bg">
+    <div class="hero-shape hero-shape-1"></div>
+    <div class="hero-shape hero-shape-2"></div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="hero-card-icon">&#x1F3E0;</div>
+      <h4>Toiture-Terrasse</h4>
+      <p>Étanchéité EPDM, PVC et bitume — pose et rénovation complète</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-icon">&#x1F4A7;</div>
+      <h4>Traitement des Infiltrations</h4>
+      <p>Diagnostic précis et élimination durable de toutes les fuites</p>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-icon">&#x1F6E1;&#xFE0F;</div>
+      <h4>Garantie Décennale</h4>
+      <p>Travaux assurés, devis gratuit sous 48h, sans engagement</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        &#x1F3C6; Artisan expert certifié en Normandie depuis 10 ans
+      </div>
+      <h1 class="hero-title">
+        Votre toit,
+        <span class="gradient-text">notre priorité.</span>
+      </h1>
+      <p class="hero-desc">
+        Normandie Étanchéité protège vos bâtiments contre les infiltrations, les fuites et les intempéries. Du diagnostic à la réalisation, des travaux durables et garantis.
+      </p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn-primary">&#x2709;&#xFE0F; Demander un devis gratuit</a>
+        <a href="tel:0651174564" class="btn-secondary">&#x1F4DE; 06-51-17-45-64</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num">500<em>+</em></div>
+          <div class="label">Chantiers réalisés</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">10<em> ans</em></div>
+          <div class="label">D'expérience</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">98<em>%</em></div>
+          <div class="label">Clients satisfaits</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-ind">
+    <span>Découvrir</span>
+    <div class="scroll-mouse"></div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="section-tag">&#x1F527; Nos prestations</div>
+      <h2 class="section-title">Des solutions d'étanchéité<br><span class="accent">complètes et durables</span></h2>
+      <p class="section-desc">Chaque chantier est unique. Nous adaptons nos techniques aux spécificités de votre bâtiment pour une protection optimale et durable.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon icon-blue">&#x1F3E0;</div>
+        <h3>Étanchéité Toiture-Terrasse</h3>
+        <p>Spécialistes de l'étanchéité des toits plats et terrasses, nous intervenons sur tous types de supports pour une imperméabilisation parfaite et pérenne.</p>
+        <ul class="service-list">
+          <li>Membrane EPDM, PVC et bitume</li>
+          <li>Pose, rénovation et réfection</li>
+          <li>Isolation thermique associée</li>
+          <li>Garantie 10 ans</li>
+        </ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon icon-orange">&#x1F4A7;</div>
+        <h3>Traitement des Infiltrations</h3>
+        <p>Diagnostic précis et traitement efficace de toutes vos infiltrations et fuites d'eau. Nous localisons et éliminons le problème à la source.</p>
+        <ul class="service-list">
+          <li>Détection et localisation de fuites</li>
+          <li>Traitement des points singuliers</li>
+          <li>Joints et relevés d'étanchéité</li>
+          <li>Intervention rapide</li>
+        </ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon icon-teal">&#x1F3D7;&#xFE0F;</div>
+        <h3>Façades &amp; Ravalement</h3>
+        <p>Imperméabilisation et traitement hydrofuge de vos façades pour les protéger durablement contre les intempéries normandes et l'humidité.</p>
+        <ul class="service-list">
+          <li>Traitement hydrofuge</li>
+          <li>Ravalement de façade</li>
+          <li>Réparation des fissures</li>
+          <li>Peinture de façade</li>
+        </ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon icon-purple">&#x1F3DA;&#xFE0F;</div>
+        <h3>Sous-Sol &amp; Fondations</h3>
+        <p>Étanchéité des caves, sous-sols et fondations pour éliminer l'humidité et protéger les structures de votre bâtiment en profondeur.</p>
+        <ul class="service-list">
+          <li>Cuvelage de cave</li>
+          <li>Drainage périphérique</li>
+          <li>Injection de résine</li>
+          <li>Traitement humidité montante</li>
+        </ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon icon-green">&#x1F527;</div>
+        <h3>Couverture &amp; Rénovation</h3>
+        <p>Réfection et rénovation de toitures en tuiles, ardoises ou zinc. Entretien préventif pour prolonger la durée de vie de votre toiture.</p>
+        <ul class="service-list">
+          <li>Tuiles et ardoises</li>
+          <li>Zinc et cuivre</li>
+          <li>Nettoyage et traitement</li>
+          <li>Chéneaux et gouttières</li>
+        </ul>
+      </div>
+      <div class="service-card">
+        <div class="service-icon icon-red">&#x26A1;</div>
+        <h3>Urgences &amp; Dépannage</h3>
+        <p>Toiture endommagée après tempête ? Fuite urgente ? Nous intervenons rapidement pour sécuriser votre bien et limiter les dégâts.</p>
+        <ul class="service-list">
+          <li>Intervention sous 24–48h</li>
+          <li>Bâchage d'urgence</li>
+          <li>Rapport pour assurance</li>
+          <li>Devis immédiat</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="chiffres">
+  <div class="container">
+    <div class="chiffres-grid">
+      <div class="chiffre-item">
+        <span class="chiffre-icon">&#x1F3D7;&#xFE0F;</span>
+        <div class="chiffre-num">500<em>+</em></div>
+        <div class="chiffre-label">Chantiers réalisés</div>
+      </div>
+      <div class="chiffre-item">
+        <span class="chiffre-icon">&#x1F4C5;</span>
+        <div class="chiffre-num">10<em> ans</em></div>
+        <div class="chiffre-label">D'expérience en Normandie</div>
+      </div>
+      <div class="chiffre-item">
+        <span class="chiffre-icon">&#x2B50;</span>
+        <div class="chiffre-num">98<em>%</em></div>
+        <div class="chiffre-label">Taux de satisfaction client</div>
+      </div>
+      <div class="chiffre-item">
+        <span class="chiffre-icon">&#x1F6E1;&#xFE0F;</span>
+        <div class="chiffre-num">10<em> ans</em></div>
+        <div class="chiffre-label">Garantie décennale</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pourquoi">
+  <div class="container">
+    <div class="pourquoi-layout">
+      <div class="pourquoi-visual">
+        <div class="pourquoi-main-card">
+          <span class="big-icon">&#x1F3C6;</span>
+          <h3>Artisan local,<br>expert reconnu</h3>
+          <p>Basés en Normandie, nous connaissons parfaitement les contraintes climatiques de la région : pluies fréquentes, vents côtiers et humidité. Nos solutions sont conçues pour votre environnement.</p>
+        </div>
+        <div class="pourquoi-badge">
+          <span class="badge-num">+500</span>
+          clients satisfaits
+        </div>
+      </div>
+      <div>
+        <div class="section-tag">&#x1F4A1; Nos atouts</div>
+        <h2 class="section-title">Pourquoi choisir<br><span class="accent">Normandie Étanchéité ?</span></h2>
+        <p class="section-desc" style="margin-bottom:42px;">Nous mettons notre expertise locale au service de la durabilité et de la performance de vos ouvrages.</p>
+        <div class="pourquoi-items">
+          <div class="pourquoi-item">
+            <div class="pourquoi-item-icon">&#x1F3AF;</div>
+            <div class="pourquoi-item-content">
+              <h4>Diagnostic gratuit et précis</h4>
+              <p>Avant tout travail, un expert se déplace pour un diagnostic complet de votre toiture ou bâtiment afin d'identifier exactement les problèmes.</p>
+            </div>
+          </div>
+          <div class="pourquoi-item">
+            <div class="pourquoi-item-icon">&#x1F4CB;</div>
+            <div class="pourquoi-item-content">
+              <h4>Devis détaillé sous 48h</h4>
+              <p>Transparence totale : devis clair, sans surprise, avec détail des matériaux et du temps de travail. Gratuit et sans engagement.</p>
+            </div>
+          </div>
+          <div class="pourquoi-item">
+            <div class="pourquoi-item-icon">&#x1F6E1;&#xFE0F;</div>
+            <div class="pourquoi-item-content">
+              <h4>Garanties et assurances</h4>
+              <p>Tous nos travaux sont couverts par notre garantie décennale et notre assurance responsabilité civile professionnelle.</p>
+            </div>
+          </div>
+          <div class="pourquoi-item">
+            <div class="pourquoi-item-icon">&#x1F33F;</div>
+            <div class="pourquoi-item-content">
+              <h4>Matériaux certifiés et durables</h4>
+              <p>Nous utilisons exclusivement des matériaux certifiés, sélectionnés pour leur performance et leur longévité dans le climat normand.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="processus">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="section-tag">&#x1F4CB; Comment ça marche</div>
+      <h2 class="section-title">Notre processus en <span class="accent">4 étapes</span></h2>
+      <p class="section-desc">Simple, rapide et transparent. De votre premier contact à la fin du chantier.</p>
+    </div>
+    <div class="processus-steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Prise de contact</h3>
+        <p>Appelez-nous ou remplissez le formulaire. Nous vous répondons dans les plus brefs délais.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Visite &amp; diagnostic</h3>
+        <p>Un expert se déplace gratuitement pour évaluer votre chantier et identifier les problèmes.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Devis gratuit</h3>
+        <p>Vous recevez un devis détaillé et transparent sous 48h, sans engagement de votre part.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <h3>Réalisation</h3>
+        <p>Nos artisans interviennent dans les délais convenus. Travaux soignés, chantier propre et garanti.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="zone">
+  <div class="container">
+    <div class="zone-layout">
+      <div>
+        <div class="section-tag">&#x1F4CD; Zone d'intervention</div>
+        <h2 class="section-title">Nous intervenons<br>dans toute la <span class="accent">Normandie</span></h2>
+        <p class="section-desc" style="margin-bottom:40px;">Depuis notre base normande, nous rayonnons sur l'ensemble de la région pour répondre rapidement à vos besoins.</p>
+        <div class="zone-departments">
+          <div class="zone-dept">
+            <div class="zone-dept-icon">&#x1F4CD;</div>
+            <div><h4>Seine-Maritime (76)</h4><p>Rouen, Le Havre, Dieppe, Fécamp, Yvetot, Barentin…</p></div>
+          </div>
+          <div class="zone-dept">
+            <div class="zone-dept-icon">&#x1F4CD;</div>
+            <div><h4>Eure (27)</h4><p>Évreux, Vernon, Bernay, Louviers, Gisors…</p></div>
+          </div>
+          <div class="zone-dept">
+            <div class="zone-dept-icon">&#x1F4CD;</div>
+            <div><h4>Calvados (14)</h4><p>Caen, Bayeux, Lisieux, Hérouville-Saint-Clair…</p></div>
+          </div>
+          <div class="zone-dept">
+            <div class="zone-dept-icon">&#x1F4CD;</div>
+            <div><h4>Manche &amp; Orne (50 · 61)</h4><p>Cherbourg, Saint-Lô, Alençon et alentours…</p></div>
+          </div>
+        </div>
+        <div class="zone-cities-list">
+          <span class="city-tag">Rouen</span><span class="city-tag">Le Havre</span>
+          <span class="city-tag">Caen</span><span class="city-tag">Évreux</span>
+          <span class="city-tag">Dieppe</span><span class="city-tag">Cherbourg</span>
+          <span class="city-tag">Bayeux</span><span class="city-tag">Fécamp</span>
+          <span class="city-tag">Lisieux</span><span class="city-tag">Alençon</span>
+          <span class="city-tag">Vernon</span><span class="city-tag">Bernay</span>
+        </div>
+      </div>
+      <div class="zone-map-box">
+        <div class="zone-map-inner">
+          <svg viewBox="0 0 400 380" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="380" fill="#dbeafe" rx="16"/>
+            <path d="M20,110 Q90,60 180,80 Q260,55 340,80 Q380,90 390,115 L390,100 Q360,70 340,68 Q260,42 180,66 Q90,46 20,96 Z" fill="#93c5fd" opacity=".6"/>
+            <path d="M30,120 Q95,78 185,95 Q265,72 345,95 Q388,108 392,138 L390,300 Q335,325 265,310 Q200,325 135,308 Q68,322 30,298 Z" fill="#bfdbfe" opacity=".75" stroke="#60a5fa" stroke-width="1.5"/>
+            <path d="M185,95 Q205,175 240,225 Q260,255 258,310" stroke="#93c5fd" stroke-width="2" fill="none" stroke-dasharray="5,3" opacity=".8"/>
+            <path d="M200,160 Q240,185 300,200 Q340,210 380,205" stroke="#60a5fa" stroke-width="1.5" fill="none" opacity=".5"/>
+            <path d="M200,160 Q170,190 140,220 Q110,245 80,260" stroke="#60a5fa" stroke-width="1.5" fill="none" opacity=".5"/>
+            <circle cx="220" cy="178" r="10" fill="#e8a020" opacity=".95"/>
+            <circle cx="220" cy="178" r="18" fill="#e8a020" opacity=".2"/>
+            <circle cx="120" cy="118" r="7" fill="#1e3a5c" opacity=".8"/>
+            <circle cx="330" cy="148" r="7" fill="#1e3a5c" opacity=".8"/>
+            <circle cx="165" cy="228" r="6" fill="#1e3a5c" opacity=".7"/>
+            <circle cx="290" cy="215" r="6" fill="#1e3a5c" opacity=".7"/>
+            <circle cx="75" cy="175" r="5" fill="#1e3a5c" opacity=".7"/>
+            <text x="234" y="174" fill="#0d1b2a" font-size="12" font-weight="700" font-family="Inter,sans-serif">Rouen</text>
+            <text x="92" y="114" fill="#0d1b2a" font-size="10" font-family="Inter,sans-serif">Le Havre</text>
+            <text x="338" y="145" fill="#0d1b2a" font-size="10" font-family="Inter,sans-serif">Caen</text>
+            <text x="140" y="244" fill="#334155" font-size="9" font-family="Inter,sans-serif">Évreux</text>
+            <text x="298" y="232" fill="#334155" font-size="9" font-family="Inter,sans-serif">Lisieux</text>
+            <text x="38" y="172" fill="#334155" font-size="9" font-family="Inter,sans-serif">Dieppe</text>
+            <rect x="90" y="300" width="220" height="32" rx="16" fill="#e8a020" opacity=".9"/>
+            <text x="200" y="321" fill="#0d1b2a" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">Toute la Normandie</text>
+            <circle cx="365" cy="338" r="22" fill="white" opacity=".85" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="365" y="332" fill="#e8a020" font-size="14" text-anchor="middle" font-weight="800" font-family="sans-serif">N</text>
+            <text x="365" y="347" fill="#94a3b8" font-size="11" text-anchor="middle">↑</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="temoignages">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="section-tag">&#x2B50; Avis clients</div>
+      <h2 class="section-title">Ce que disent<br>nos <span class="accent">clients</span></h2>
+      <p class="section-desc">Plus de 500 clients nous ont fait confiance en Normandie. Voici ce qu'ils en pensent.</p>
+    </div>
+    <div class="temoignages-grid">
+      <div class="temoignage-card featured">
+        <div class="quote-icon">&ldquo;</div>
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="temoignage-text">Intervention rapide et professionnelle suite à une importante fuite sur ma toiture-terrasse. Le diagnostic a été précis, les travaux réalisés en une journée. Plus aucune infiltration depuis ! Je recommande vivement.</p>
+        <div class="temoignage-author">
+          <div class="author-avatar" style="background:rgba(232,160,32,.2);color:#e8a020;">MB</div>
+          <div class="author-info"><div class="name">Marie B.</div><div class="location">Rouen (76)</div></div>
+        </div>
+      </div>
+      <div class="temoignage-card">
+        <div class="quote-icon" style="color:#e8a020;">&ldquo;</div>
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="temoignage-text">Équipe sérieuse et ponctuelle. Devis clair et honnête, pas de mauvaise surprise. La toiture de notre maison a été entièrement rénovée avec soin. Très satisfait du résultat.</p>
+        <div class="temoignage-author">
+          <div class="author-avatar" style="background:rgba(59,130,246,.1);color:#3b82f6;">PL</div>
+          <div class="author-info"><div class="name">Pierre L.</div><div class="location">Le Havre (76)</div></div>
+        </div>
+      </div>
+      <div class="temoignage-card">
+        <div class="quote-icon" style="color:#e8a020;">&ldquo;</div>
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="temoignage-text">Cave inondée chaque hiver, problème enfin réglé ! L'équipe a réalisé un cuvelage complet. Travail propre, délais respectés. Je n'aurais pas pu espérer mieux.</p>
+        <div class="temoignage-author">
+          <div class="author-avatar" style="background:rgba(20,184,166,.1);color:#14b8a6;">SF</div>
+          <div class="author-info"><div class="name">Sophie F.</div><div class="location">Caen (14)</div></div>
+        </div>
+      </div>
+      <div class="temoignage-card">
+        <div class="quote-icon" style="color:#e8a020;">&ldquo;</div>
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="temoignage-text">Façade très abîmée par l'humidité. Après le ravalement et le traitement hydrofuge, elle est comme neuve. Très bon rapport qualité-prix, je ferai appel à eux pour l'entretien.</p>
+        <div class="temoignage-author">
+          <div class="author-avatar" style="background:rgba(232,160,32,.1);color:#e8a020;">JM</div>
+          <div class="author-info"><div class="name">Jean-Marc V.</div><div class="location">Évreux (27)</div></div>
+        </div>
+      </div>
+      <div class="temoignage-card">
+        <div class="quote-icon" style="color:#e8a020;">&ldquo;</div>
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="temoignage-text">Suite à la tempête Ciaran, ils sont intervenus en urgence pour bâcher notre toiture. Réactifs, efficaces et rassurants. La réfection complète s'est ensuite passée parfaitement.</p>
+        <div class="temoignage-author">
+          <div class="author-avatar" style="background:rgba(239,68,68,.08);color:#ef4444;">CR</div>
+          <div class="author-info"><div class="name">Claire R.</div><div class="location">Dieppe (76)</div></div>
+        </div>
+      </div>
+      <div class="temoignage-card">
+        <div class="quote-icon" style="color:#e8a020;">&ldquo;</div>
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="temoignage-text">Propriétaire de plusieurs appartements, je fais confiance à Normandie Étanchéité pour l'entretien de mes toitures. Toujours disponibles, toujours de qualité. Un partenaire fiable.</p>
+        <div class="temoignage-author">
+          <div class="author-avatar" style="background:rgba(109,40,217,.08);color:#7c3aed;">AT</div>
+          <div class="author-info"><div class="name">Alain T.</div><div class="location">Bayeux (14)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="section-tag">&#x2709;&#xFE0F; Contact</div>
+      <h2 class="section-title">Parlons de<br>votre <span class="accent">projet</span></h2>
+      <p class="section-desc">Devis gratuit et sans engagement sous 48h. Notre équipe est à votre écoute du lundi au samedi.</p>
+    </div>
+    <div class="contact-layout">
+      <div class="contact-info">
+        <div class="contact-card">
+          <div class="contact-card-icon">&#x1F4DE;</div>
+          <div class="contact-card-content">
+            <div class="label">Téléphone</div>
+            <div class="value"><a href="tel:0651174564">06-51-17-45-64</a></div>
+            <div class="sub">Du lundi au samedi, 8h–19h</div>
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">&#x2709;&#xFE0F;</div>
+          <div class="contact-card-content">
+            <div class="label">Email</div>
+            <div class="value"><a href="mailto:contact@normandie-etancheite.com">contact@normandie-etancheite.com</a></div>
+            <div class="sub">Réponse sous 24h</div>
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">&#x1F4CD;</div>
+          <div class="contact-card-content">
+            <div class="label">Zone d'intervention</div>
+            <div class="value">Toute la Normandie</div>
+            <div class="sub">Seine-Maritime · Eure · Calvados · Manche · Orne</div>
+          </div>
+        </div>
+        <div class="contact-urgence">
+          <div class="urg-tag">&#x26A1; Urgence</div>
+          <h4>Fuite ou dégât urgent ?</h4>
+          <p>Nous intervenons rapidement pour les situations d'urgence. Appelez-nous directement.</p>
+          <a href="tel:0651174564">&#x1F4DE; Appel d'urgence</a>
+        </div>
+      </div>
+      <div class="contact-form">
+        <h3>Demande de devis gratuit</h3>
+        <form onsubmit="handleSubmit(event)">
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Prénom *</label><input class="form-input" type="text" placeholder="Votre prénom" required></div>
+            <div class="form-group"><label class="form-label">Nom *</label><input class="form-input" type="text" placeholder="Votre nom" required></div>
+            <div class="form-group"><label class="form-label">Téléphone *</label><input class="form-input" type="tel" placeholder="06 XX XX XX XX" required></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="votre@email.com"></div>
+            <div class="form-group full">
+              <label class="form-label">Type de prestation</label>
+              <select class="form-select">
+                <option value="">Sélectionnez un service…</option>
+                <option>Étanchéité toiture-terrasse</option>
+                <option>Traitement des infiltrations / fuites</option>
+                <option>Façades &amp; ravalement</option>
+                <option>Sous-sol &amp; fondations</option>
+                <option>Couverture &amp; rénovation</option>
+                <option>Urgence / dépannage</option>
+                <option>Autre</option>
+              </select>
+            </div>
+            <div class="form-group full"><label class="form-label">Ville / Commune</label><input class="form-input" type="text" placeholder="Votre ville"></div>
+            <div class="form-group full"><label class="form-label">Description de votre projet</label><textarea class="form-textarea" placeholder="Décrivez votre projet ou problème (type de bâtiment, superficie approximative, urgence…)"></textarea></div>
+          </div>
+          <button type="submit" class="form-submit">&#x2709;&#xFE0F; Envoyer ma demande de devis</button>
+          <p class="form-note">&#x1F512; Vos données sont confidentielles. Devis gratuit, sans engagement.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="nav-logo">
+          <div class="logo-icon">&#x1F6E1;&#xFE0F;</div>
+          <div class="logo-text">Normandie Étanchéité<span>Expert en Étanchéité</span></div>
+        </div>
+        <p>Artisan expert en étanchéité en Normandie. Nous protégeons vos bâtiments contre les infiltrations et les intempéries avec des solutions durables et certifiées.</p>
+        <div class="footer-contact-items">
+          <div class="footer-contact-item"><span>&#x1F4DE;</span><a href="tel:0651174564" style="color:rgba(255,255,255,.65);">06-51-17-45-64</a></div>
+          <div class="footer-contact-item"><span>&#x2709;&#xFE0F;</span><a href="mailto:contact@normandie-etancheite.com" style="color:rgba(255,255,255,.65);">contact@normandie-etancheite.com</a></div>
+        </div>
+        <div class="certif-badges">
+          <div class="certif-badge">&#x1F6E1;&#xFE0F; Garantie Décennale</div>
+          <div class="certif-badge">&#x2705; Assuré RCP</div>
+          <div class="certif-badge">&#x1F3C5; Artisan qualifié</div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul class="footer-links">
+          <li><a href="#services">Toiture-terrasse</a></li>
+          <li><a href="#services">Traitement infiltrations</a></li>
+          <li><a href="#services">Façades &amp; ravalement</a></li>
+          <li><a href="#services">Sous-sol &amp; fondations</a></li>
+          <li><a href="#services">Couverture &amp; rénovation</a></li>
+          <li><a href="#services">Urgences &amp; dépannage</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Zone d'intervention</h4>
+        <ul class="footer-links">
+          <li><a href="#zone">Seine-Maritime (76)</a></li>
+          <li><a href="#zone">Eure (27)</a></li>
+          <li><a href="#zone">Calvados (14)</a></li>
+          <li><a href="#zone">Manche (50)</a></li>
+          <li><a href="#zone">Orne (61)</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Informations</h4>
+        <ul class="footer-links">
+          <li><a href="#pourquoi">Nos atouts</a></li>
+          <li><a href="#processus">Notre processus</a></li>
+          <li><a href="#temoignages">Avis clients</a></li>
+          <li><a href="#contact">Devis gratuit</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 <em>Normandie Étanchéité</em> — Tous droits réservés</p>
+      <p>Mentions légales · Politique de confidentialité</p>
+    </div>
+  </div>
+</footer>
+
+<div class="float-cta">
+  <a href="tel:0651174564" class="float-btn">
+    <div class="f-icon">&#x1F4DE;</div>
+    <span>06-51-17-45-64</span>
+  </a>
+</div>
+
+<script>
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  let menuOpen = false;
+  function toggleMenu() {
+    menuOpen = !menuOpen;
+    const links = document.querySelector('.nav-links');
+    if (menuOpen) {
+      links.style.cssText = 'display:flex;flex-direction:column;position:fixed;inset:0;background:rgba(13,27,42,.97);backdrop-filter:blur(20px);align-items:center;justify-content:center;gap:36px;z-index:999;';
+      links.querySelectorAll('a').forEach(a => { a.style.fontSize = '22px'; a.onclick = toggleMenu; });
+    } else {
+      links.style.cssText = '';
+      links.querySelectorAll('a').forEach(a => { a.style.fontSize = ''; });
+    }
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.form-submit');
+    btn.textContent = 'Demande envoyée ! Nous vous rappelons bientôt.';
+    btn.style.cssText = 'background:linear-gradient(135deg,#22c55e,#16a34a);color:white;';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'Envoyer ma demande de devis';
+      btn.style.cssText = '';
+      btn.disabled = false;
+      e.target.reset();
+    }, 4500);
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: .12 });
+
+  document.querySelectorAll('.service-card, .pourquoi-item, .temoignage-card, .step-card, .zone-dept, .chiffre-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(28px)';
+    el.style.transition = 'opacity .65s ease, transform .65s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
