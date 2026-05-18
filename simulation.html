@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Normandie Étanchéité — Simulation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0d1b2a;
+    --blue:   #1b3a5c;
+    --accent: #e8a020;
+    --gold2:  #f5bc55;
+    --light:  #f0f4f8;
+    --white:  #ffffff;
+    --text:   #334155;
+    --muted:  #64748b;
+    --border: #e2e8f0;
+    --grad1: linear-gradient(135deg, #0d1b2a 0%, #1b3a5c 50%, #1e4d7b 100%);
+    --grad2: linear-gradient(135deg, #e8a020 0%, #f5bc55 100%);
+  }
+
+  body {
+    background: #111;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+  }
+
+  #stage {
+    width: 960px; height: 540px;
+    position: relative; overflow: hidden;
+    border-radius: 14px;
+    box-shadow: 0 40px 100px rgba(0,0,0,.8);
+  }
+
+  #progress {
+    position: absolute; bottom: 0; left: 0;
+    height: 3px; background: var(--grad2);
+    border-radius: 0 2px 2px 0; z-index: 500;
+    animation: prog 33s linear forwards;
+  }
+  @keyframes prog { from { width: 0; } to { width: 100%; } }
+
+  /* SCENE 0 */
+  #s0 {
+    position: absolute; inset: 0; z-index: 200;
+    background: var(--navy);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    animation: fadeOut .6s ease 2.5s forwards;
+  }
+  .s0-logo { display: flex; align-items: center; gap: 14px; animation: scaleIn .8s ease .2s both; }
+  .s0-icon { width: 60px; height: 60px; background: var(--grad2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 8px 30px rgba(232,160,32,.5); }
+  .s0-name { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: white; line-height: 1.1; }
+  .s0-name em { display: block; font-size: 13px; font-weight: 400; color: var(--gold2); letter-spacing: 3px; font-style: normal; text-transform: uppercase; margin-top: 4px; }
+  .s0-tag { font-size: 13px; color: rgba(255,255,255,.5); letter-spacing: 4px; text-transform: uppercase; animation: fadeInUp .6s ease .8s both; }
+
+  /* BROWSER */
+  #browser { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; animation: fadeIn .5s ease 2.8s forwards; }
+  .browser-bar { height: 44px; background: #232323; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .url-bar { flex: 1; height: 26px; background: #333; border-radius: 6px; display: flex; align-items: center; padding: 0 12px; gap: 6px; }
+  .url-lock { font-size: 10px; color: #74c69d; }
+  .url-text { font-size: 12px; color: #ccc; font-family: monospace; }
+  .browser-content { flex: 1; overflow: hidden; position: relative; background: var(--white); }
+
+  .page { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; }
+
+  .site-nav { height: 50px; background: var(--navy); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+  .site-logo { display: flex; align-items: center; gap: 10px; }
+  .site-logo .li { width: 30px; height: 30px; background: var(--grad2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .site-logo span { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: white; }
+  .site-logo small { display: block; font-size: 9px; font-weight: 400; color: var(--gold2); letter-spacing: 1.5px; }
+  .site-nav-links { display: flex; gap: 20px; }
+  .site-nav-links a { font-size: 11px; color: rgba(255,255,255,.7); font-weight: 500; }
+  .nav-btn { background: var(--grad2); color: var(--navy); padding: 7px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+
+  /* SCENE 1 - HERO */
+  #s1 { animation: fadeIn .5s ease 2.8s forwards, fadeOut .4s ease 9s forwards; }
+  .hero-body { flex: 1; position: relative; overflow: hidden; background: var(--grad1); display: flex; align-items: center; }
+  .hero-body::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 15% 85%, rgba(59,130,246,.25) 0%, transparent 45%), radial-gradient(circle at 85% 15%, rgba(232,160,32,.15) 0%, transparent 45%); }
+  .hero-blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .5; animation: blob 7s ease-in-out infinite; }
+  .blob1 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(59,130,246,.5), transparent); top: -80px; right: -60px; }
+  .blob2 { width: 200px; height: 200px; background: radial-gradient(circle, rgba(232,160,32,.4), transparent); bottom: 20px; left: -30px; animation-delay: 3s; }
+  @keyframes blob { 0%,100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.08) translateY(-15px); } }
+  .hero-left { position: relative; z-index: 1; padding: 32px 36px; flex: 1; display: flex; flex-direction: column; gap: 14px; animation: slideLeft .7s ease 3.1s both; }
+  @keyframes slideLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+  .h-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(232,160,32,.18); border: 1px solid rgba(232,160,32,.35); color: var(--gold2); padding: 5px 14px; border-radius: 30px; font-size: 10px; font-weight: 500; letter-spacing: 1px; width: fit-content; }
+  .h-title { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; color: white; line-height: 1.1; }
+  .h-title em { display: block; font-style: normal; background: linear-gradient(135deg, #e8a020, #f5bc55, #fcd34d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .h-desc { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.7; max-width: 300px; }
+  .h-btns { display: flex; gap: 10px; }
+  .h-btn1 { display: flex; align-items: center; gap: 7px; background: var(--grad2); color: var(--navy); padding: 10px 20px; border-radius: 30px; font-size: 11px; font-weight: 700; box-shadow: 0 6px 20px rgba(232,160,32,.4); animation: pulseCTA 1.5s ease 5s 2; }
+  @keyframes pulseCTA { 0%,100% { box-shadow: 0 6px 20px rgba(232,160,32,.4); transform: scale(1); } 50% { box-shadow: 0 10px 30px rgba(232,160,32,.6); transform: scale(1.04); } }
+  .h-btn2 { display: flex; align-items: center; gap: 7px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); color: white; padding: 10px 20px; border-radius: 30px; font-size: 11px; font-weight: 600; }
+  .h-stats { display: flex; gap: 0; margin-top: 6px; }
+  .h-stat { padding: 0 20px; border-right: 1px solid rgba(255,255,255,.2); }
+  .h-stat:first-child { padding-left: 0; }
+  .h-stat:last-child { border-right: none; }
+  .h-stat .n { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: white; }
+  .h-stat .n em { color: var(--accent); font-style: normal; }
+  .h-stat .l { font-size: 9px; color: rgba(255,255,255,.55); }
+  .hero-right { width: 38%; padding: 20px 20px 20px 0; display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1; }
+  .h-card { background: rgba(255,255,255,.08); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 16px 18px; animation: slideRight .7s ease both; }
+  .h-card:nth-child(1) { animation-delay: .4s; margin-left: 30px; }
+  .h-card:nth-child(2) { animation-delay: .6s; }
+  .h-card:nth-child(3) { animation-delay: .8s; margin-left: 50px; }
+  @keyframes slideRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  .h-card-ico { width: 34px; height: 34px; background: var(--grad2); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 8px; }
+  .h-card h4 { font-size: 12px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .h-card p { font-size: 10px; color: rgba(255,255,255,.55); line-height: 1.4; }
+
+  /* SCENE 2 - SERVICES */
+  #s2 { background: var(--light); animation: fadeIn .4s ease 9.2s forwards, fadeOut .4s ease 16s forwards; }
+  .services-body { flex: 1; padding: 22px 24px; overflow: hidden; }
+  .s-header { text-align: center; margin-bottom: 18px; }
+  .s-tag { display: inline-block; background: rgba(232,160,32,.12); color: var(--accent); border: 1px solid rgba(232,160,32,.25); padding: 4px 12px; border-radius: 20px; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .s-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--navy); }
+  .s-title em { color: var(--accent); font-style: normal; }
+  .s-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .s-card { background: white; border-radius: 14px; padding: 18px 16px; border: 1px solid var(--border); opacity: 0; animation: cardIn .5s ease both; }
+  .s-card:nth-child(1) { animation-delay: 9.4s; }
+  .s-card:nth-child(2) { animation-delay: 9.6s; }
+  .s-card:nth-child(3) { animation-delay: 9.8s; }
+  .s-card:nth-child(4) { animation-delay: 10.0s; }
+  .s-card:nth-child(5) { animation-delay: 10.2s; }
+  .s-card:nth-child(6) { animation-delay: 10.4s; }
+  @keyframes cardIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .s-ico { font-size: 22px; margin-bottom: 8px; }
+  .s-card h3 { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .s-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .s-list li { font-size: 9px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .s-list li::before { content: '\2713'; width: 14px; height: 14px; background: var(--grad2); color: var(--navy); border-radius: 50%; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* SCENE 3 - STATS + POURQUOI */
+  #s3 { background: white; animation: fadeIn .4s ease 16.2s forwards, fadeOut .4s ease 23s forwards; }
+  .stats-banner { background: var(--grad1); flex-shrink: 0; padding: 16px 24px; display: flex; justify-content: space-around; align-items: center; position: relative; overflow: hidden; }
+  .stats-banner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(232,160,32,.1), transparent); }
+  .stat-b { text-align: center; }
+  .stat-b .n { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: white; line-height: 1; }
+  .stat-b .n em { color: var(--accent); font-style: normal; }
+  .stat-b .l { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 3px; }
+  .stat-b .ico { font-size: 20px; display: block; margin-bottom: 6px; }
+  .stat-sep { width: 1px; height: 50px; background: rgba(255,255,255,.15); }
+  .pourquoi-body { flex: 1; padding: 20px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .pq-card { background: var(--grad1); border-radius: 20px; padding: 26px; color: white; position: relative; overflow: hidden; animation: slideLeft .6s ease 16.5s both; }
+  .pq-card::before { content: ''; position: absolute; top: -40px; right: -40px; width: 130px; height: 130px; background: radial-gradient(circle, rgba(232,160,32,.2), transparent); border-radius: 50%; }
+  .pq-card .big { font-size: 40px; margin-bottom: 12px; display: block; }
+  .pq-card h3 { font-family: 'Syne', sans-serif; font-size: 18px; margin-bottom: 8px; }
+  .pq-card p { font-size: 11px; color: rgba(255,255,255,.7); line-height: 1.6; }
+  .pq-badge { position: absolute; bottom: -12px; right: 24px; background: var(--grad2); color: var(--navy); border-radius: 10px; padding: 10px 16px; font-weight: 700; font-size: 11px; box-shadow: 0 8px 20px rgba(232,160,32,.4); text-align: center; }
+  .pq-badge strong { display: block; font-family: 'Syne', sans-serif; font-size: 20px; }
+  .pq-items { display: flex; flex-direction: column; gap: 10px; animation: slideRight .6s ease 16.7s both; }
+  .pq-item { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 12px; border: 1px solid var(--border); opacity: 0; animation: cardIn .5s ease both; }
+  .pq-item:nth-child(1) { animation-delay: 17s; }
+  .pq-item:nth-child(2) { animation-delay: 17.3s; }
+  .pq-item:nth-child(3) { animation-delay: 17.6s; }
+  .pq-item:nth-child(4) { animation-delay: 17.9s; }
+  .pq-ico { width: 36px; height: 36px; background: var(--grad2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .pq-item h4 { font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .pq-item p { font-size: 10px; color: var(--muted); line-height: 1.5; }
+
+  /* SCENE 4 - CONTACT */
+  #s4 { background: white; animation: fadeIn .4s ease 23.2s forwards, fadeOut .4s ease 30s forwards; }
+  .contact-body { flex: 1; padding: 20px 24px; display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; }
+  .ct-info { display: flex; flex-direction: column; gap: 14px; }
+  .ct-card { display: flex; gap: 12px; align-items: flex-start; opacity: 0; animation: cardIn .5s ease both; }
+  .ct-card:nth-child(1) { animation-delay: 23.5s; }
+  .ct-card:nth-child(2) { animation-delay: 23.8s; }
+  .ct-card:nth-child(3) { animation-delay: 24.1s; }
+  .ct-ico { width: 42px; height: 42px; background: var(--grad1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .ct-card .lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+  .ct-card .val { font-size: 14px; font-weight: 700; color: var(--navy); margin-top: 2px; }
+  .ct-card .sub { font-size: 10px; color: var(--muted); }
+  .ct-urg { background: var(--navy); border-radius: 14px; padding: 18px; opacity: 0; animation: cardIn .5s ease 24.4s both; }
+  .ct-urg .ug { display: inline-block; background: var(--accent); color: var(--navy); padding: 3px 10px; border-radius: 20px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .ct-urg h4 { font-family: 'Syne', sans-serif; font-size: 14px; color: white; margin-bottom: 5px; }
+  .ct-urg p { font-size: 10px; color: rgba(255,255,255,.6); margin-bottom: 12px; }
+  .ct-urg a { display: inline-flex; align-items: center; gap: 7px; background: var(--grad2); color: var(--navy); padding: 9px 18px; border-radius: 20px; font-weight: 700; font-size: 12px; animation: pulseCTA 1.5s ease 26s 2; }
+  .ct-form { background: var(--light); border-radius: 18px; padding: 22px; opacity: 0; animation: slideRight .6s ease 23.4s both; }
+  .ct-form h3 { font-family: 'Syne', sans-serif; font-size: 16px; color: var(--navy); margin-bottom: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .fi { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--muted); background: white; font-family: 'Inter', sans-serif; }
+  .fi.full { width: 100%; }
+  .fi.ta { min-height: 60px; resize: none; display: block; }
+  .fi.animated { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,160,32,.15); }
+  .form-sel { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--muted); background: white; font-family: 'Inter', sans-serif; margin-bottom: 10px; }
+  .submit-btn { width: 100%; padding: 12px; background: var(--grad2); color: var(--navy); border: none; border-radius: 10px; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; animation: pulseCTA 1.5s ease 27s 2; }
+  .form-note { text-align: center; font-size: 9px; color: var(--muted); margin-top: 8px; }
+
+  /* SCENE 5 - OUTRO */
+  #s5 { position: absolute; inset: 0; z-index: 100; background: var(--grad1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; opacity: 0; animation: fadeIn .8s ease 30.2s forwards; overflow: hidden; }
+  #s5::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 70%, rgba(59,130,246,.2), transparent 50%), radial-gradient(circle at 70% 30%, rgba(232,160,32,.15), transparent 50%); }
+  .outro-logo { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; animation: scaleIn .8s ease 30.5s both; }
+  .outro-ico { width: 70px; height: 70px; background: var(--grad2); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 10px 35px rgba(232,160,32,.5); }
+  .outro-name { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; color: white; }
+  .outro-name em { display: block; font-size: 13px; font-weight: 400; color: var(--gold2); letter-spacing: 3px; font-style: normal; text-transform: uppercase; margin-top: 4px; }
+  .outro-contact { display: flex; gap: 32px; position: relative; z-index: 1; animation: fadeInUp .6s ease 31s both; }
+  .oc-item { display: flex; align-items: center; gap: 10px; }
+  .oc-ico { width: 40px; height: 40px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .oc-item span { font-size: 15px; font-weight: 600; color: white; }
+  .outro-tagline { font-size: 14px; color: rgba(255,255,255,.6); letter-spacing: 2px; position: relative; z-index: 1; animation: fadeInUp .6s ease 31.5s both; }
+  .outro-cta { display: flex; align-items: center; gap: 10px; background: var(--grad2); color: var(--navy); padding: 14px 32px; border-radius: 40px; font-weight: 700; font-size: 15px; position: relative; z-index: 1; box-shadow: 0 10px 35px rgba(232,160,32,.5); animation: fadeInUp .6s ease 32s both; }
+
+  /* CURSOR */
+  #cursor { position: absolute; z-index: 999; pointer-events: none; width: 22px; height: 22px; opacity: 0; animation: cursorAnim 30s linear 2.8s both; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+  #cursor svg { width: 100%; height: 100%; }
+  @keyframes cursorAnim {
+    0%   { left:480px; top:250px; opacity:0; }
+    3%   { opacity:1; }
+    8%   { left:650px; top:200px; }
+    15%  { left:220px; top:160px; }
+    22%  { left:340px; top:300px; }
+    30%  { left:500px; top:220px; }
+    38%  { left:180px; top:350px; }
+    45%  { left:700px; top:280px; }
+    55%  { left:420px; top:380px; }
+    65%  { left:300px; top:260px; }
+    75%  { left:580px; top:340px; }
+    85%  { left:440px; top:420px; }
+    95%  { opacity:1; }
+    100% { opacity:0; }
+  }
+
+  /* KEYFRAMES */
+  @keyframes fadeOut  { to { opacity:0; pointer-events:none; } }
+  @keyframes fadeIn   { to { opacity:1; } }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes scaleIn  { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
+
+  /* SCENE DOTS */
+  .scene-dots { position: absolute; top: 54px; right: 12px; display: flex; flex-direction: column; gap: 5px; z-index: 300; }
+  .sd { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.25); transition: background .3s, transform .3s; }
+  .sd.on { background: var(--accent); transform: scale(1.3); }
+  .scene-label { position: absolute; top: 54px; left: 12px; z-index: 300; font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: 2px; text-transform: uppercase; background: rgba(0,0,0,.3); padding: 4px 10px; border-radius: 20px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="progress"></div>
+
+  <div class="scene-dots">
+    <div class="sd" id="d0"></div>
+    <div class="sd" id="d1"></div>
+    <div class="sd" id="d2"></div>
+    <div class="sd" id="d3"></div>
+    <div class="sd" id="d4"></div>
+  </div>
+  <div class="scene-label" id="slabel">Intro</div>
+
+  <div id="cursor">
+    <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 0L4 20L8 16L11 22L14 21L11 15L17 15Z"/>
+    </svg>
+  </div>
+
+  <!-- SCENE 0 -->
+  <div id="s0">
+    <div class="s0-logo">
+      <div class="s0-icon">&#x1F6E1;&#xFE0F;</div>
+      <div class="s0-name">Normandie Étanchéité<em>Expert certifié · Normandie</em></div>
+    </div>
+    <div class="s0-tag">Simulation du site web</div>
+  </div>
+
+  <!-- BROWSER -->
+  <div id="browser">
+    <div class="browser-bar">
+      <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <div class="url-bar"><span class="url-lock">&#x1F512;</span><span class="url-text">normandie-etancheite.com</span></div>
+    </div>
+    <div class="browser-content">
+
+      <!-- SCENE 1 - HERO -->
+      <div class="page" id="s1">
+        <nav class="site-nav">
+          <div class="site-logo"><div class="li">&#x1F6E1;&#xFE0F;</div><div><span>Normandie Étanchéité</span><small>Expert en Étanchéité</small></div></div>
+          <div class="site-nav-links"><a href="#">Services</a><a href="#">Nos atouts</a><a href="#">Zone</a><a href="#">Avis</a></div>
+          <div class="nav-btn">&#x1F4DE; Devis gratuit</div>
+        </nav>
+        <div class="hero-body">
+          <div class="hero-blob blob1"></div>
+          <div class="hero-blob blob2"></div>
+          <div class="hero-left">
+            <div class="h-badge">&#x1F3C6; Artisan expert certifié en Normandie depuis 10 ans</div>
+            <div class="h-title">Votre toit,<em>notre priorité.</em></div>
+            <div class="h-desc">Normandie Étanchéité protège vos bâtiments contre les infiltrations, les fuites et les intempéries. Travaux durables et garantis.</div>
+            <div class="h-btns">
+              <div class="h-btn1">&#x2709;&#xFE0F; Demander un devis gratuit</div>
+              <div class="h-btn2">&#x1F4DE; 06-51-17-45-64</div>
+            </div>
+            <div class="h-stats">
+              <div class="h-stat"><div class="n">500<em>+</em></div><div class="l">Chantiers réalisés</div></div>
+              <div class="h-stat"><div class="n">10<em> ans</em></div><div class="l">D'expérience</div></div>
+              <div class="h-stat"><div class="n">98<em>%</em></div><div class="l">Clients satisfaits</div></div>
+            </div>
+          </div>
+          <div class="hero-right">
+            <div class="h-card"><div class="h-card-ico">&#x1F3E0;</div><h4>Toiture-Terrasse</h4><p>EPDM, PVC et bitume — pose et rénovation complète</p></div>
+            <div class="h-card"><div class="h-card-ico">&#x1F4A7;</div><h4>Traitement des Infiltrations</h4><p>Diagnostic précis, élimination durable des fuites</p></div>
+            <div class="h-card"><div class="h-card-ico">&#x1F6E1;&#xFE0F;</div><h4>Garantie Décennale</h4><p>Travaux assurés, devis gratuit sous 48h</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 2 - SERVICES -->
+      <div class="page" id="s2">
+        <nav class="site-nav">
+          <div class="site-logo"><div class="li">&#x1F6E1;&#xFE0F;</div><div><span>Normandie Étanchéité</span><small>Expert en Étanchéité</small></div></div>
+          <div class="site-nav-links"><a href="#" style="color:var(--accent);font-weight:700;">Services</a><a href="#">Nos atouts</a><a href="#">Zone</a><a href="#">Avis</a></div>
+          <div class="nav-btn">&#x1F4DE; Devis gratuit</div>
+        </nav>
+        <div class="services-body">
+          <div class="s-header">
+            <div class="s-tag">&#x1F527; Nos prestations</div>
+            <div class="s-title">Solutions d'étanchéité <em>complètes et durables</em></div>
+          </div>
+          <div class="s-grid">
+            <div class="s-card"><div class="s-ico">&#x1F3E0;</div><h3>Étanchéité Toiture-Terrasse</h3><ul class="s-list"><li>Membrane EPDM, PVC et bitume</li><li>Pose, rénovation et réfection</li><li>Garantie 10 ans</li></ul></div>
+            <div class="s-card"><div class="s-ico">&#x1F4A7;</div><h3>Traitement des Infiltrations</h3><ul class="s-list"><li>Détection et localisation de fuites</li><li>Traitement des points singuliers</li><li>Intervention rapide</li></ul></div>
+            <div class="s-card"><div class="s-ico">&#x1F3D7;&#xFE0F;</div><h3>Façades &amp; Ravalement</h3><ul class="s-list"><li>Traitement hydrofuge</li><li>Ravalement de façade</li><li>Réparation des fissures</li></ul></div>
+            <div class="s-card"><div class="s-ico">&#x1F3DA;&#xFE0F;</div><h3>Sous-Sol &amp; Fondations</h3><ul class="s-list"><li>Cuvelage de cave</li><li>Drainage périphérique</li><li>Injection de résine</li></ul></div>
+            <div class="s-card"><div class="s-ico">&#x1F527;</div><h3>Couverture &amp; Rénovation</h3><ul class="s-list"><li>Tuiles et ardoises</li><li>Zinc et cuivre</li><li>Chéneaux et gouttières</li></ul></div>
+            <div class="s-card"><div class="s-ico">&#x26A1;</div><h3>Urgences &amp; Dépannage</h3><ul class="s-list"><li>Intervention sous 24–48h</li><li>Bâchage d'urgence</li><li>Rapport pour assurance</li></ul></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 3 - STATS + POURQUOI -->
+      <div class="page" id="s3">
+        <nav class="site-nav">
+          <div class="site-logo"><div class="li">&#x1F6E1;&#xFE0F;</div><div><span>Normandie Étanchéité</span><small>Expert en Étanchéité</small></div></div>
+          <div class="site-nav-links"><a href="#">Services</a><a href="#" style="color:var(--accent);font-weight:700;">Nos atouts</a><a href="#">Zone</a><a href="#">Avis</a></div>
+          <div class="nav-btn">&#x1F4DE; Devis gratuit</div>
+        </nav>
+        <div class="stats-banner">
+          <div class="stat-b"><span class="ico">&#x1F3D7;&#xFE0F;</span><div class="n">500<em>+</em></div><div class="l">Chantiers réalisés</div></div>
+          <div class="stat-sep"></div>
+          <div class="stat-b"><span class="ico">&#x1F4C5;</span><div class="n">10<em> ans</em></div><div class="l">D'expérience</div></div>
+          <div class="stat-sep"></div>
+          <div class="stat-b"><span class="ico">&#x2B50;</span><div class="n">98<em>%</em></div><div class="l">Satisfaction client</div></div>
+          <div class="stat-sep"></div>
+          <div class="stat-b"><span class="ico">&#x1F6E1;&#xFE0F;</span><div class="n">10<em> ans</em></div><div class="l">Garantie décennale</div></div>
+        </div>
+        <div class="pourquoi-body">
+          <div class="pq-card">
+            <span class="big">&#x1F3C6;</span>
+            <h3>Artisan local,<br>expert reconnu</h3>
+            <p>Basés en Normandie, nos solutions sont conçues pour votre environnement : pluies fréquentes, vents côtiers et humidité.</p>
+            <div class="pq-badge"><strong>+500</strong>clients satisfaits</div>
+          </div>
+          <div class="pq-items">
+            <div class="pq-item"><div class="pq-ico">&#x1F3AF;</div><div><h4>Diagnostic gratuit et précis</h4><p>Un expert se déplace pour identifier exactement vos problèmes.</p></div></div>
+            <div class="pq-item"><div class="pq-ico">&#x1F4CB;</div><div><h4>Devis détaillé sous 48h</h4><p>Transparent, sans surprise. Gratuit et sans engagement.</p></div></div>
+            <div class="pq-item"><div class="pq-ico">&#x1F6E1;&#xFE0F;</div><div><h4>Garanties et assurances</h4><p>Garantie décennale + RC professionnelle sur tous nos travaux.</p></div></div>
+            <div class="pq-item"><div class="pq-ico">&#x1F33F;</div><div><h4>Matériaux certifiés</h4><p>Sélectionnés pour le climat normand.</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 4 - CONTACT -->
+      <div class="page" id="s4">
+        <nav class="site-nav">
+          <div class="site-logo"><div class="li">&#x1F6E1;&#xFE0F;</div><div><span>Normandie Étanchéité</span><small>Expert en Étanchéité</small></div></div>
+          <div class="site-nav-links"><a href="#">Services</a><a href="#">Nos atouts</a><a href="#">Zone</a><a href="#">Avis</a></div>
+          <div class="nav-btn" style="background:var(--grad2);color:var(--navy);">&#x1F4DE; Devis gratuit</div>
+        </nav>
+        <div class="contact-body">
+          <div class="ct-info">
+            <div class="ct-card"><div class="ct-ico">&#x1F4DE;</div><div><div class="lbl">Téléphone</div><div class="val">06-51-17-45-64</div><div class="sub">Lun–Sam, 8h–19h</div></div></div>
+            <div class="ct-card"><div class="ct-ico">&#x2709;&#xFE0F;</div><div><div class="lbl">Email</div><div class="val" style="font-size:11px;">contact@normandie-etancheite.com</div><div class="sub">Réponse sous 24h</div></div></div>
+            <div class="ct-card"><div class="ct-ico">&#x1F4CD;</div><div><div class="lbl">Zone d'intervention</div><div class="val">Toute la Normandie</div><div class="sub">76 · 27 · 14 · 50 · 61</div></div></div>
+            <div class="ct-urg">
+              <div class="ug">&#x26A1; Urgence</div>
+              <h4>Fuite ou dégât urgent ?</h4>
+              <p>Intervention rapide, appelez-nous directement.</p>
+              <a href="#">&#x1F4DE; Appel d'urgence</a>
+            </div>
+          </div>
+          <div class="ct-form">
+            <h3>Demande de devis gratuit</h3>
+            <div class="form-row"><div class="fi">Prénom *</div><div class="fi">Nom *</div></div>
+            <div class="form-row"><div class="fi animated">06 XX XX XX XX</div><div class="fi">Email</div></div>
+            <select class="form-sel"><option>Étanchéité toiture-terrasse</option></select>
+            <div class="fi full" style="margin-bottom:10px;">Votre ville</div>
+            <div class="fi full ta" style="margin-bottom:10px;">Décrivez votre projet…</div>
+            <button class="submit-btn">&#x2709;&#xFE0F; Envoyer ma demande de devis</button>
+            <div class="form-note">&#x1F512; Devis gratuit, sans engagement · Réponse sous 48h</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENE 5 - OUTRO -->
+  <div id="s5">
+    <div class="outro-logo">
+      <div class="outro-ico">&#x1F6E1;&#xFE0F;</div>
+      <div class="outro-name">Normandie Étanchéité<em>Expert en Étanchéité · Normandie</em></div>
+    </div>
+    <div class="outro-contact">
+      <div class="oc-item"><div class="oc-ico">&#x1F4DE;</div><span>06-51-17-45-64</span></div>
+      <div class="oc-item"><div class="oc-ico">&#x2709;&#xFE0F;</div><span>contact@normandie-etancheite.com</span></div>
+    </div>
+    <div class="outro-tagline">DEVIS GRATUIT · GARANTIE DÉCENNALE · TOUTE LA NORMANDIE</div>
+    <div class="outro-cta">&#x2709;&#xFE0F; Demandez votre devis gratuit</div>
+  </div>
+
+</div>
+<script>
+  const scenes = [
+    { id:'d0', label:'Intro',      start:0,    end:2.5  },
+    { id:'d1', label:'Accueil',    start:2.8,  end:9    },
+    { id:'d2', label:'Services',   start:9.2,  end:16   },
+    { id:'d3', label:'Nos atouts', start:16.2, end:23   },
+    { id:'d4', label:'Contact',    start:23.2, end:30   },
+  ];
+  const lbl = document.getElementById('slabel');
+  function tick() {
+    const t = performance.now() / 1000 % 33;
+    scenes.forEach(s => {
+      const el = document.getElementById(s.id);
+      const active = t >= s.start && t < s.end;
+      el.classList.toggle('on', active);
+      if (active) lbl.textContent = s.label;
+    });
+  }
+  setInterval(tick, 100);
+  setTimeout(() => location.reload(), 33500);
+</script>
+</body>
+</html>
