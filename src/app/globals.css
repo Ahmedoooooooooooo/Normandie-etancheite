@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --background: #0f172a;
+  --background: #080d14;
   --foreground: #f8fafc;
 }
 
 @layer base {
   body {
-    background: #0f172a;
+    background: #080d14;
     color: #f8fafc;
   }
 }
@@ -25,26 +25,68 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom range input styling */
+h1, h2, h3 {
+  font-family: var(--font-syne), sans-serif;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #f97316, #fb923c, #fdba74);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: rgba(15, 23, 36, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glow-orange {
+  box-shadow: 0 0 40px rgba(249, 115, 22, 0.15), 0 0 80px rgba(249, 115, 22, 0.05);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 4px 24px rgba(249, 115, 22, 0.35);
+  transition: all 0.2s ease;
+}
+.btn-primary:hover {
+  box-shadow: 0 8px 32px rgba(249, 115, 22, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Dot grid background pattern */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Line grid */
+.line-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
   height: 6px;
-  background: #334155;
   border-radius: 3px;
+  background: #1e2d3d;
   outline: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
   width: 20px;
   height: 20px;
-  background: #f97316;
   border-radius: 50%;
+  background: #f97316;
   cursor: pointer;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0 12px rgba(249,115,22,0.5);
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -54,5 +96,5 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   cursor: pointer;
   border: none;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0 12px rgba(249,115,22,0.5);
 }
