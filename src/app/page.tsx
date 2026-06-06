@@ -127,7 +127,7 @@ function BeforeAfterCard({ project }: { project: typeof projects[0] }) {
   const [showAfter, setShowAfter] = useState(false);
 
   return (
-    <div className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 hover:border-orange-500/50 transition-all duration-300">
+    <div className="glass-card rounded-2xl overflow-hidden hover:border-orange-500/30 transition-all duration-300 group hover:scale-[1.01]">
       <div className="relative">
         {/* Image container */}
         <div className="relative overflow-hidden" style={{ aspectRatio: "8/5" }}>
@@ -147,33 +147,49 @@ function BeforeAfterCard({ project }: { project: typeof projects[0] }) {
             className={`object-cover transition-opacity duration-500 ${showAfter ? "opacity-100" : "opacity-0"}`}
             unoptimized
           />
-          {/* Badge */}
-          <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-sm font-bold transition-all duration-300 ${showAfter ? "bg-orange-500 text-white" : "bg-slate-700 text-slate-300"}`}>
+
+          {/* Gradient overlay at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+
+          {/* Premium badge */}
+          <div className={`absolute top-3 left-3 px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md transition-all duration-300 ${
+            showAfter
+              ? "bg-orange-500/90 text-white border border-orange-400/50"
+              : "bg-black/50 text-slate-300 border border-white/10"
+          }`}>
             {showAfter ? "APRÈS" : "AVANT"}
           </div>
-        </div>
 
-        {/* Toggle buttons */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 bg-slate-900/80 backdrop-blur-sm rounded-full p-1">
-          <button
-            onClick={() => setShowAfter(false)}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${!showAfter ? "bg-slate-600 text-white" : "text-slate-400 hover:text-slate-200"}`}
-          >
-            Avant
-          </button>
-          <button
-            onClick={() => setShowAfter(true)}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${showAfter ? "bg-orange-500 text-white" : "text-slate-400 hover:text-slate-200"}`}
-          >
-            Après
-          </button>
+          {/* Toggle buttons */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/60 backdrop-blur-md rounded-full p-1.5 border border-white/10">
+            <button
+              onClick={() => setShowAfter(false)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                !showAfter
+                  ? "bg-white/20 text-white"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Avant
+            </button>
+            <button
+              onClick={() => setShowAfter(true)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                showAfter
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/40"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Après
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-semibold text-white">{project.title}</h3>
-        <p className="text-slate-400 text-sm mt-1 flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="p-5">
+        <h3 className="font-bold text-white text-lg">{project.title}</h3>
+        <p className="text-slate-400 text-sm mt-1.5 flex items-center gap-1.5">
+          <svg className="w-4 h-4 text-orange-500/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -186,71 +202,92 @@ function BeforeAfterCard({ project }: { project: typeof projects[0] }) {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-[#080d14] text-white">
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl" />
+      {/* ── HERO SECTION ─────────────────────────────────────────────── */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20">
+        {/* Dot grid background */}
+        <div className="absolute inset-0 dot-grid" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-2 mb-8">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-            <span className="text-orange-400 text-sm font-medium">Plus de 20 ans d&apos;expertise en Normandie</span>
+        {/* Orange glow blurs */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%)" }} />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(249,115,22,0.07) 0%, transparent 70%)" }} />
+
+        {/* Diagonal stripe */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-[800px] h-[800px] rotate-[30deg] opacity-[0.03]"
+            style={{ background: "linear-gradient(135deg, #f97316 0%, transparent 60%)" }} />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center flex flex-col items-center">
+          {/* Badge pill */}
+          <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/25 rounded-full px-5 py-2 mb-10">
+            <span className="text-orange-400 text-sm font-semibold">⚡ Experts en toiture depuis 1998 · Normandie</span>
           </div>
 
           {/* Main headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
-            Votre toiture entre{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
-              les mains d&apos;experts
-            </span>
-            <br />
-            depuis plus de 20 ans
+          <h1
+            className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.05] mb-7 max-w-4xl"
+            style={{ fontFamily: "var(--font-syne), sans-serif" }}
+          >
+            L&apos;expertise toiture{" "}
+            <br className="hidden sm:block" />
+            <span className="gradient-text">qui protège votre maison</span>
           </h1>
 
-          <p className="text-xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Artisans certifiés RGE spécialisés en étanchéité, réfection et rénovation de toiture en Normandie.
-            Devis gratuit, intervention rapide, garantie décennale.
+          <p className="text-xl text-slate-400 mb-10 max-w-2xl leading-relaxed">
+            Artisans certifiés RGE spécialisés en étanchéité, réfection et rénovation de toiture en Normandie. Disponibles sous 48h.
           </p>
 
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Link
               href="/rendez-vous"
-              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5"
+              className="btn-primary text-white px-8 py-4 rounded-2xl font-bold text-lg inline-flex items-center gap-2"
             >
+              Expertise gratuite
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-              Prendre rendez-vous gratuit
             </Link>
             <a
               href="tel:+33232000000"
-              className="inline-flex items-center gap-2 border border-slate-600 hover:border-orange-500 text-slate-300 hover:text-orange-400 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-200"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-              02 32 00 00 00
+              📞 02 32 00 00 00
             </a>
           </div>
 
-          {/* Stats row */}
-          <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto">
+          {/* Mini trust badges */}
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-slate-400 mb-16">
+            {["Certifié RGE", "Garantie décennale", "Intervention sous 48h"].map((item) => (
+              <span key={item} className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+                {item}
+              </span>
+            ))}
+          </div>
+
+          {/* Stats bar */}
+          <div className="w-full max-w-3xl glass-card glow-orange rounded-2xl p-6 grid grid-cols-2 sm:grid-cols-4 gap-6">
             {[
-              { value: "20+", label: "Années d'expérience" },
-              { value: "1500+", label: "Chantiers réalisés" },
-              { value: "48h", label: "Délai d'intervention" },
-              { value: "10 ans", label: "Garantie décennale" },
+              { value: "20+", label: "ans d'expertise" },
+              { value: "1500+", label: "chantiers réalisés" },
+              { value: "48h", label: "délai d'intervention" },
+              { value: "4.9★", label: "satisfaction client" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-3xl font-extrabold text-orange-500">{stat.value}</div>
+                <div
+                  className="text-3xl font-extrabold gradient-text"
+                  style={{ fontFamily: "var(--font-syne), sans-serif" }}
+                >
+                  {stat.value}
+                </div>
                 <div className="text-slate-400 text-sm mt-1">{stat.label}</div>
               </div>
             ))}
@@ -259,21 +296,116 @@ export default function HomePage() {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <svg className="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
       </section>
 
-      {/* Trust Badges Section */}
-      <section id="services" className="py-20 bg-slate-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
-              Pourquoi nous choisir ?
+      {/* ── COMMENT ÇA MARCHE ────────────────────────────────────────── */}
+      <section id="comment-ca-marche" className="py-24 relative overflow-hidden" style={{ background: "#0c1520" }}>
+        <div className="absolute inset-0 line-grid" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-orange-500 text-sm font-semibold uppercase tracking-widest mb-3">Processus</p>
+            <h2
+              className="text-4xl sm:text-5xl font-extrabold text-white"
+              style={{ fontFamily: "var(--font-syne), sans-serif" }}
+            >
+              Simple, rapide, efficace
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Connecting line desktop */}
+            <div className="hidden md:block absolute top-12 left-[calc(16.66%+2rem)] right-[calc(16.66%+2rem)] h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent" />
+
+            {[
+              {
+                num: "1",
+                title: "Prenez RDV",
+                icon: (
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                ),
+                desc: "Choisissez votre créneau en ligne en 2 minutes, sans attente.",
+              },
+              {
+                num: "2",
+                title: "Expertise gratuite",
+                icon: (
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                ),
+                desc: "Un expert se déplace chez vous pour évaluer votre toiture gratuitement.",
+              },
+              {
+                num: "3",
+                title: "Travaux réalisés",
+                icon: (
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ),
+                desc: "Nos artisans interviennent dans les meilleurs délais, avec soin et professionnalisme.",
+              },
+            ].map((step) => (
+              <div key={step.num} className="flex flex-col items-center text-center group">
+                {/* Step number circle */}
+                <div className="relative mb-6">
+                  <div className="w-24 h-24 rounded-full flex items-center justify-center text-white relative z-10"
+                    style={{ background: "linear-gradient(135deg, #f97316, #ea580c)", boxShadow: "0 0 40px rgba(249,115,22,0.3)" }}>
+                    {step.icon}
+                  </div>
+                  <div
+                    className="absolute -top-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-black border-2 border-[#0c1520]"
+                    style={{ background: "linear-gradient(135deg, #f97316, #ea580c)", fontFamily: "var(--font-syne), sans-serif" }}
+                  >
+                    {step.num}
+                  </div>
+                </div>
+                <h3
+                  className="text-xl font-bold text-white mb-3"
+                  style={{ fontFamily: "var(--font-syne), sans-serif" }}
+                >
+                  {step.title}
+                </h3>
+                <p className="text-slate-400 leading-relaxed max-w-xs">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              href="/rendez-vous"
+              className="btn-primary text-white px-8 py-4 rounded-2xl font-bold text-lg inline-flex items-center gap-2"
+            >
+              Prendre RDV maintenant
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── POURQUOI NOUS (Trust Badges) ─────────────────────────────── */}
+      <section id="services" className="py-24 relative overflow-hidden bg-[#080d14]">
+        <div className="absolute inset-0 dot-grid" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-orange-500 text-sm font-semibold uppercase tracking-widest mb-3">Nos engagements</p>
+            <h2
+              className="text-4xl sm:text-5xl font-extrabold text-white mb-4"
+              style={{ fontFamily: "var(--font-syne), sans-serif" }}
+            >
+              Les garanties{" "}
+              <span className="gradient-text">Normandie Étanchéité</span>
             </h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Notre engagement : vous offrir le meilleur service avec des garanties solides.
+              Notre engagement : vous offrir le meilleur service avec des garanties solides et durables.
             </p>
           </div>
 
@@ -281,13 +413,21 @@ export default function HomePage() {
             {trustBadges.map((badge) => (
               <div
                 key={badge.title}
-                className="bg-slate-800 border border-slate-700 rounded-2xl p-6 hover:border-orange-500/50 transition-all duration-300 group"
+                className="glass-card rounded-2xl p-6 hover:border-l-2 hover:border-orange-500 transition-all duration-300 group hover:scale-[1.02] cursor-default"
               >
-                <div className="w-14 h-14 bg-orange-500/10 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 mb-4 group-hover:bg-orange-500/20 transition-colors">
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center text-white mb-5 transition-all duration-300"
+                  style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}
+                >
                   {badge.icon}
                 </div>
-                <h3 className="text-lg font-bold text-white mb-1">{badge.title}</h3>
-                <p className="text-orange-400 text-sm font-medium mb-2">{badge.subtitle}</p>
+                <h3
+                  className="text-lg font-bold text-white mb-1"
+                  style={{ fontFamily: "var(--font-syne), sans-serif" }}
+                >
+                  {badge.title}
+                </h3>
+                <p className="text-orange-400 text-sm font-medium mb-3">{badge.subtitle}</p>
                 <p className="text-slate-400 text-sm leading-relaxed">{badge.desc}</p>
               </div>
             ))}
@@ -295,11 +435,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Before/After Gallery */}
-      <section id="realisations" className="py-20 bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
+      {/* ── NOS RÉALISATIONS (Before/After) ──────────────────────────── */}
+      <section id="realisations" className="py-24 relative overflow-hidden" style={{ background: "#0a1118" }}>
+        <div className="absolute inset-0 line-grid" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-orange-500 text-sm font-semibold uppercase tracking-widest mb-3">Portfolio</p>
+            <h2
+              className="text-4xl sm:text-5xl font-extrabold text-white mb-4"
+              style={{ fontFamily: "var(--font-syne), sans-serif" }}
+            >
               Nos réalisations
             </h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
@@ -307,62 +452,82 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-14">
             {projects.map((project) => (
               <BeforeAfterCard key={project.id} project={project} />
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          {/* Full-width banner */}
+          <div className="glass-card rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+              <h3
+                className="text-2xl font-bold text-white mb-2"
+                style={{ fontFamily: "var(--font-syne), sans-serif" }}
+              >
+                Chaque projet est unique.
+              </h3>
+              <p className="text-slate-400">Votre devis est gratuit et sans engagement.</p>
+            </div>
             <Link
               href="/rendez-vous"
-              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg shadow-orange-500/25"
+              className="btn-primary text-white px-8 py-4 rounded-2xl font-bold text-lg inline-flex items-center gap-2 shrink-0"
             >
               Demander un devis gratuit
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="temoignages" className="py-20 bg-slate-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
-              Ce que disent nos clients
-            </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Plus de 1500 clients satisfaits en Normandie nous font confiance.
-            </p>
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <StarRating rating={5} />
-              <span className="text-white font-semibold">4.9/5</span>
-              <span className="text-slate-400">· 248 avis</span>
+      {/* ── TÉMOIGNAGES ──────────────────────────────────────────────── */}
+      <section id="temoignages" className="py-24 relative overflow-hidden bg-[#080d14]">
+        <div className="absolute inset-0 dot-grid" />
+        {/* Diagonal gradient overlay */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(135deg, rgba(249,115,22,0.03) 0%, transparent 50%)" }} />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-orange-500 text-sm font-semibold uppercase tracking-widest mb-3">Avis clients</p>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span
+                className="text-6xl font-extrabold gradient-text"
+                style={{ fontFamily: "var(--font-syne), sans-serif" }}
+              >
+                4.9★
+              </span>
             </div>
+            <p className="text-slate-400 text-lg">248 avis vérifiés · Basé sur Google Reviews</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
               <div
                 key={t.name}
-                className="bg-slate-800 border border-slate-700 rounded-2xl p-6 hover:border-orange-500/30 transition-all duration-300"
+                className="glass-card rounded-2xl p-7 hover:border-t-2 hover:border-orange-500 transition-all duration-300 group flex flex-col"
               >
-                {/* Quote icon */}
-                <svg className="w-8 h-8 text-orange-500/40 mb-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                </svg>
+                {/* Large quote icon */}
+                <div className="text-6xl font-serif text-orange-500/30 leading-none mb-4 select-none">&ldquo;</div>
+
                 <StarRating rating={t.rating} />
-                <p className="text-slate-300 mt-4 mb-6 leading-relaxed text-sm">&ldquo;{t.text}&rdquo;</p>
-                <div className="flex items-center gap-3 border-t border-slate-700 pt-4">
-                  <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center text-orange-500 font-bold text-sm">
+
+                <p className="text-slate-300 mt-4 mb-6 leading-relaxed text-base flex-1">
+                  &ldquo;{t.text}&rdquo;
+                </p>
+
+                <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                  <div
+                    className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
+                    style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}
+                  >
                     {t.name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div>
                     <p className="text-white font-semibold text-sm">{t.name}</p>
-                    <p className="text-slate-400 text-xs">{t.location} · {t.date}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">{t.location} · {t.date}</p>
                   </div>
                 </div>
               </div>
@@ -371,104 +536,242 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-orange-600 to-orange-500 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDM0di0yaC0ydi0yaDJ2LTJoMnYyaDJ2MmgtMnpNNiA0djItSDR2LTJIMnYtMmgydi0yaDJ2MmgydjJINnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20" />
+      {/* ── CTA FINAL ────────────────────────────────────────────────── */}
+      <section className="py-28 relative overflow-hidden bg-[#080d14]">
+        {/* Orange radial glow center */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[700px] h-[700px] rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 65%)" }} />
+        </div>
+        {/* Line grid overlay */}
+        <div className="absolute inset-0 line-grid" />
+
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
-            Votre toiture a besoin d&apos;une inspection ?
+          <h2
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6"
+            style={{ fontFamily: "var(--font-syne), sans-serif" }}
+          >
+            Votre toiture mérite{" "}
+            <span className="gradient-text">le meilleur</span>
           </h2>
-          <p className="text-orange-100 text-lg mb-8 max-w-2xl mx-auto">
-            Ne laissez pas un problème de toiture s&apos;aggraver. Prenez rendez-vous dès maintenant pour un diagnostic gratuit.
+          <p className="text-slate-400 text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+            Ne laissez pas un problème de toiture s&apos;aggraver. Profitez d&apos;une expertise gratuite et sans engagement dès maintenant.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Link
               href="/rendez-vous"
-              className="inline-flex items-center justify-center gap-2 bg-white text-orange-600 hover:bg-orange-50 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg"
+              className="btn-primary text-white px-10 py-5 rounded-2xl font-bold text-xl inline-flex items-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Prendre rendez-vous gratuit
+              Expertise gratuite
             </Link>
             <a
               href="tel:+33232000000"
-              className="inline-flex items-center justify-center gap-2 border-2 border-white text-white hover:bg-white/10 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-10 py-5 rounded-2xl font-bold text-xl transition-all duration-200"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
-              Appelez-nous maintenant
+              02 32 00 00 00
             </a>
+          </div>
+
+          {/* Reassurance icons */}
+          <div className="flex flex-wrap justify-center gap-8 text-slate-400 text-sm">
+            {[
+              {
+                icon: (
+                  <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                ),
+                label: "Certifié RGE",
+              },
+              {
+                icon: (
+                  <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ),
+                label: "Réponse sous 24h",
+              },
+              {
+                icon: (
+                  <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                ),
+                label: "4.9★ satisfaction",
+              },
+            ].map((item) => (
+              <span key={item.label} className="flex items-center gap-2">
+                {item.icon}
+                {item.label}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 py-12">
+      {/* ── FOOTER ───────────────────────────────────────────────────── */}
+      <footer className="bg-[#060b11] border-t border-white/5 pt-16 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Brand */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+            {/* Column 1: Brand */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <Link href="/" className="flex items-center gap-3 mb-4 group">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg, #f97316, #ea580c)" }}>
+                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <span className="text-white font-bold text-lg">
+                <span className="text-white font-bold text-lg" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
                   Normandie <span className="text-orange-500">Étanchéité</span>
                 </span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              </Link>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6">
                 Expert en étanchéité et rénovation de toiture en Normandie depuis plus de 20 ans.
               </p>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h3 className="text-white font-semibold mb-4">Contact</h3>
-              <div className="space-y-2 text-slate-400 text-sm">
-                <p className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  02 32 00 00 00
-                </p>
-                <p className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  contact@normandie-etancheite.fr
-                </p>
-                <p className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  76000 Rouen, Normandie
-                </p>
+              {/* Social icons (placeholders) */}
+              <div className="flex gap-3 mb-6">
+                {["facebook", "instagram", "linkedin"].map((social) => (
+                  <a key={social} href="#" aria-label={social}
+                    className="w-9 h-9 rounded-lg bg-white/5 hover:bg-orange-500/20 border border-white/5 hover:border-orange-500/30 flex items-center justify-center transition-all duration-200">
+                    <div className="w-4 h-4 bg-slate-500 rounded-sm" />
+                  </a>
+                ))}
               </div>
-            </div>
-
-            {/* Links */}
-            <div>
-              <h3 className="text-white font-semibold mb-4">Certifications</h3>
+              {/* Certification pills */}
               <div className="flex flex-wrap gap-2">
-                {["RGE Qualibat", "Garantie décennale", "Artisan certifié", "Assurance RC Pro"].map((cert) => (
-                  <span key={cert} className="bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1 rounded-full text-xs">
+                {["RGE Qualibat", "Garantie décennale", "RC Pro"].map((cert) => (
+                  <span key={cert}
+                    className="text-xs px-3 py-1 rounded-full border border-orange-500/20 text-orange-400/80 bg-orange-500/5">
                     {cert}
                   </span>
                 ))}
               </div>
             </div>
+
+            {/* Column 2: Services */}
+            <div>
+              <h3 className="text-white font-semibold mb-5 text-sm uppercase tracking-wider" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
+                Nos services
+              </h3>
+              <ul className="space-y-2.5">
+                {[
+                  "Étanchéité toiture",
+                  "Réfection toiture",
+                  "Zinguerie & gouttières",
+                  "Tuiles & ardoises",
+                  "Toiture terrasse",
+                  "Membrane EPDM",
+                  "Diagnostic & expertise",
+                ].map((service) => (
+                  <li key={service}>
+                    <a href="#" className="text-slate-400 hover:text-orange-400 text-sm transition-colors flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-orange-500/60" />
+                      {service}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 3: Zone d'intervention */}
+            <div>
+              <h3 className="text-white font-semibold mb-5 text-sm uppercase tracking-wider" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
+                Zone d&apos;intervention
+              </h3>
+              <ul className="space-y-2.5">
+                {["Rouen", "Caen", "Le Havre", "Cherbourg", "Évreux", "Alençon", "Lisieux", "Dieppe"].map((city) => (
+                  <li key={city}>
+                    <a href="#" className="text-slate-400 hover:text-orange-400 text-sm transition-colors flex items-center gap-2">
+                      <svg className="w-3.5 h-3.5 text-orange-500/60 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {city}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 4: Contact */}
+            <div>
+              <h3 className="text-white font-semibold mb-5 text-sm uppercase tracking-wider" style={{ fontFamily: "var(--font-syne), sans-serif" }}>
+                Contact
+              </h3>
+              <div className="space-y-4">
+                <a href="tel:+33232000000"
+                  className="flex items-start gap-3 text-slate-400 hover:text-orange-400 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-orange-500/20 transition-colors">
+                    <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium">02 32 00 00 00</p>
+                    <p className="text-xs mt-0.5">Lun – Sam 8h00 – 18h00</p>
+                  </div>
+                </a>
+
+                <a href="mailto:contact@normandie-etancheite.fr"
+                  className="flex items-start gap-3 text-slate-400 hover:text-orange-400 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-orange-500/20 transition-colors">
+                    <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium">contact@normandie-etancheite.fr</p>
+                    <p className="text-xs mt-0.5">Réponse sous 24h</p>
+                  </div>
+                </a>
+
+                <div className="flex items-start gap-3 text-slate-400">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-white text-sm font-medium">76000 Rouen, Normandie</p>
+                    <p className="text-xs mt-0.5">Zone d&apos;intervention : toute la Normandie</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-500 text-sm">
+          {/* Bottom bar */}
+          <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-600 text-sm">
             <p>© {new Date().getFullYear()} Normandie Étanchéité. Tous droits réservés.</p>
+            <p>Site réalisé par des experts pour des experts</p>
           </div>
         </div>
       </footer>
+
+      {/* ── MOBILE STICKY BAR ────────────────────────────────────────── */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-[#0f1724]/95 backdrop-blur-md border-t border-white/10 p-3 flex gap-3">
+        <a
+          href="tel:+33232000000"
+          className="flex-1 flex items-center justify-center gap-2 border border-white/10 text-white py-3 rounded-xl font-semibold text-sm hover:bg-white/5 transition-colors"
+        >
+          📞 Appeler
+        </a>
+        <Link
+          href="/rendez-vous"
+          className="flex-1 btn-primary flex items-center justify-center gap-2 text-white py-3 rounded-xl font-bold text-sm"
+        >
+          Prendre RDV
+        </Link>
+      </div>
     </div>
   );
 }
