@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  basePath: "/normandie-etancheite",
+  basePath: "/Normandie-etancheite",
   images: {
     unoptimized: true,
     remotePatterns: [
