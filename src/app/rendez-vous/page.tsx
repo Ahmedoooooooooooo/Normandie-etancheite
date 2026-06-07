@@ -772,46 +772,6 @@ export default function RendezVousPage() {
                     <span>10 m²</span>
                     <span>3 000 m²</span>
                   </div>
-                  {/* Devis estimatif */}
-                  {(() => {
-                    const honoraires = getHonorairesTarif(formData.surface);
-                    const distance = clientCoords
-                      ? haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon)
-                      : null;
-                    const deplacement = distance !== null ? getDeplacementTarif(distance) : null;
-                    const total = deplacement !== null ? honoraires + deplacement : null;
-                    return (
-                      <div className="bg-slate-800/60 border border-orange-500/30 rounded-2xl p-5 mt-2">
-                        <h3 className="text-white font-semibold mb-4 flex items-center gap-2 text-sm">
-                          <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          Estimation tarifaire
-                        </h3>
-                        <div className="space-y-2.5 text-sm">
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400">Honoraires expertise ({formData.surface} m²)</span>
-                            <span className="text-white font-semibold">{honoraires} € HT</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400">
-                              Forfait déplacement{distance !== null ? ` (≈ ${Math.round(distance)} km)` : ""}
-                            </span>
-                            <span className="text-white font-semibold">
-                              {deplacement !== null ? `${deplacement} € HT` : <span className="text-slate-500 italic">selon adresse</span>}
-                            </span>
-                          </div>
-                          <div className="border-t border-slate-700 pt-3 flex justify-between items-center">
-                            <span className="text-white font-bold">Total estimé HT</span>
-                            <span className="text-orange-400 font-bold text-base">
-                              {total !== null ? `${total} €` : `à partir de ${honoraires + 50} €`}
-                            </span>
-                          </div>
-                        </div>
-                        <p className="text-slate-500 text-xs mt-3">TVA 20% applicable · Tarif indicatif, confirmé après expertise</p>
-                      </div>
-                    );
-                  })()}
                 </div>
 
                 {/* Type de toiture */}
