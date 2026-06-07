@@ -18,7 +18,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "=https://calendar.zoho.eu/caldav/TON_EMAIL_ZOHO/events/{{ $now.toMillis() }}.ics",
+        "url": "=https://calendar.zoho.eu/caldav/TON_EMAIL_ZOHO/Calendar/{{ $now.toMillis() }}.ics",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBasicAuth",
         "sendBody": true,
