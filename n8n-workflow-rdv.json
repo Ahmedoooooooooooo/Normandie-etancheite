@@ -1,0 +1,58 @@
+{
+  "name": "Normandie Etancheite - RDV",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "18bc0126-ec6f-433c-89be-85f90b0a4bad",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "18bc0126-ec6f-433c-89be-85f90b0a4bad"
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "id"
+        },
+        "start": "={{ $json.body.date }}T{{ $json.body.heure }}:00",
+        "end": "={{ $json.body.date }}T{{ String(Number($json.body.heure.split(':')[0]) + 1).padStart(2, '0') }}:{{ $json.body.heure.split(':')[1] }}:00",
+        "additionalFields": {
+          "summary": "=🏠 RDV - {{ $json.body.prenom }} {{ $json.body.nom }}",
+          "description": "=📞 {{ $json.body.telephone }}\n📧 {{ $json.body.email }}\n🏢 Société: {{ $json.body.societe || 'Particulier' }}\n\n📍 {{ $json.body.adresse }}\n\n--- CHANTIER ---\n💰 Surface: {{ $json.body.surface_m2 }} m²\n🔧 Type: {{ $json.body.type_toiture }}\n📊 État: {{ $json.body.etat_general }}\n🚪 Accès: {{ $json.body.accessibilite }}\n\n📝 {{ $json.body.description || 'Aucune description' }}"
+        }
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "Google Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.1,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
