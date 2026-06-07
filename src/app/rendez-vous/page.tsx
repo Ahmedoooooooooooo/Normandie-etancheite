@@ -343,6 +343,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 export default function RendezVousPage() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
   const [formData, setFormData] = useState<FormData>({
@@ -413,11 +414,37 @@ export default function RendezVousPage() {
 
   const handleBack = () => setStep(s => s - 1);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep3()) return;
-    console.log("Rendez-vous soumis :", formData);
-    setSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      await fetch("https://n8n.srv1591454.hstgr.cloud/webhook/18bc0126-ec6f-433c-89be-85f90b0a4bad", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prenom: formData.prenom,
+          nom: formData.nom,
+          telephone: formData.telephone,
+          email: formData.email,
+          societe: formData.societe,
+          adresse: formData.adresse,
+          date: formData.date,
+          date_formatee: formatDateFR(formData.date),
+          heure: formData.time,
+          surface_m2: formData.surface,
+          type_toiture: TYPE_TOITURE_OPTIONS.find(o => o.value === formData.typeToiture)?.label || formData.typeToiture,
+          etat_general: ETAT_GENERAL_OPTIONS.find(o => o.value === formData.etatGeneral)?.label || formData.etatGeneral,
+          accessibilite: ACCESSIBILITE_OPTIONS.find(o => o.value === formData.accessibilite)?.label || formData.accessibilite,
+          description: formData.description,
+        }),
+      });
+    } catch {
+      // Continue même si le webhook échoue
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }
   };
 
   // ── Format date for display ─────────────────────────────────────────
@@ -815,12 +842,17 @@ export default function RendezVousPage() {
               ) : (
                 <button
                   type="submit"
-                  className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-bold transition-all duration-200 shadow-lg shadow-orange-500/25"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-70 text-white px-8 py-3 rounded-xl font-bold transition-all duration-200 shadow-lg shadow-orange-500/25"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Confirmer le rendez-vous
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  {isSubmitting ? "Envoi en cours..." : "Confirmer le rendez-vous"}
                 </button>
               )}
             </div>
