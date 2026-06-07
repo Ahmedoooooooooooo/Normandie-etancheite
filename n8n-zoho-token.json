@@ -1,0 +1,64 @@
+{
+  "name": "Zoho Token Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "zoho-token",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "zoho-token"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://accounts.zoho.eu/oauth/v2/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "code", "value": "={{ $json.query.code }}" },
+            { "name": "client_id", "value": "1000.66BKZGIYXBC2A0J27SQR1IY1RSXKES" },
+            { "name": "client_secret", "value": "13c5994f319933f4690c08973117dba3b12f57fdd5" },
+            { "name": "redirect_uri", "value": "https://api-console.zoho.eu/" },
+            { "name": "grant_type", "value": "authorization_code" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2e3f4a5-b6c7-8901-defa-234567890123",
+      "name": "Zoho Token Exchange",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "e3f4a5b6-c7d8-9012-efab-345678901234",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Zoho Token Exchange", "type": "main", "index": 0 }]]
+    },
+    "Zoho Token Exchange": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}
