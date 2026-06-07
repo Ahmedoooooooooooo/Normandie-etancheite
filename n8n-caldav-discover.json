@@ -1,0 +1,73 @@
+{
+  "name": "Zoho CalDAV - Discover",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "zoho-discover",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "zoho-discover"
+    },
+    {
+      "parameters": {
+        "method": "PROPFIND",
+        "url": "https://calendar.zoho.eu/caldav/TON_EMAIL_ZOHO/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Depth", "value": "1" },
+            { "name": "Content-Type", "value": "application/xml; charset=utf-8" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/xml; charset=utf-8",
+        "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><D:propfind xmlns:D=\"DAV:\"><D:prop><D:displayname/><D:resourcetype/></D:prop></D:propfind>",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b2c3d4e5-0002-0002-0002-000000000002",
+      "name": "PROPFIND",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "c3d4e5f6-0003-0003-0003-000000000003",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "PROPFIND", "type": "main", "index": 0 }]]
+    },
+    "PROPFIND": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}
