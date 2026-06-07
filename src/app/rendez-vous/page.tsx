@@ -10,6 +10,7 @@ interface AddressSuggestion {
   city: string;
   postcode: string;
   context: string;
+  coordinates: [number, number]; // [lon, lat]
 }
 
 interface FormData {
@@ -67,6 +68,37 @@ const ACCESSIBILITE_OPTIONS = [
   { value: "2-etages-plus", label: "2 étages et plus" },
   { value: "difficile-acces", label: "Difficile d'accès" },
 ];
+
+// Company location: 16 Impasse Beau Vallon, 61100 Flers
+const COMPANY_LAT = 48.7480;
+const COMPANY_LON = -0.5636;
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function getDeplacementTarif(km: number): number {
+  if (km <= 30) return 50;
+  if (km <= 60) return 80;
+  if (km <= 100) return 120;
+  if (km <= 150) return 160;
+  return 220;
+}
+
+function getHonorairesTarif(surface: number): number {
+  if (surface <= 100) return 200;
+  if (surface <= 250) return 250;
+  if (surface <= 500) return 320;
+  if (surface <= 1000) return 450;
+  if (surface <= 2000) return 600;
+  if (surface <= 3000) return 800;
+  return 1000;
+}
 
 // ── Helper: Calendar ────────────────────────────────────────────────────
 function getDaysInMonth(year: number, month: number) {
@@ -198,10 +230,12 @@ function Calendar({
 function AddressInput({
   value,
   onChange,
+  onCoordinates,
   error,
 }: {
   value: string;
   onChange: (val: string) => void;
+  onCoordinates?: (lat: number, lon: number) => void;
   error?: string;
 }) {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
@@ -219,12 +253,14 @@ function AddressInput({
       );
       const data = await res.json();
       const formatted: AddressSuggestion[] = (data.features || []).map((f: {
-        properties: { label: string; city: string; postcode: string; context: string }
+        properties: { label: string; city: string; postcode: string; context: string };
+        geometry: { coordinates: [number, number] };
       }) => ({
         label: f.properties.label,
         city: f.properties.city,
         postcode: f.properties.postcode,
         context: f.properties.context,
+        coordinates: f.geometry.coordinates,
       }));
       setSuggestions(formatted);
       setIsOpen(formatted.length > 0);
@@ -244,6 +280,7 @@ function AddressInput({
 
   const handleSelect = (suggestion: AddressSuggestion) => {
     onChange(suggestion.label);
+    onCoordinates?.(suggestion.coordinates[1], suggestion.coordinates[0]);
     setSuggestions([]);
     setIsOpen(false);
   };
@@ -345,6 +382,7 @@ export default function RendezVousPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [clientCoords, setClientCoords] = useState<{ lat: number; lon: number } | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     date: "",
@@ -437,6 +475,16 @@ export default function RendezVousPage() {
           etat_general: ETAT_GENERAL_OPTIONS.find(o => o.value === formData.etatGeneral)?.label || formData.etatGeneral,
           accessibilite: ACCESSIBILITE_OPTIONS.find(o => o.value === formData.accessibilite)?.label || formData.accessibilite,
           description: formData.description,
+          devis_honoraires: getHonorairesTarif(formData.surface),
+          devis_deplacement: clientCoords
+            ? getDeplacementTarif(haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon))
+            : null,
+          devis_distance_km: clientCoords
+            ? Math.round(haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon))
+            : null,
+          devis_total: clientCoords
+            ? getHonorairesTarif(formData.surface) + getDeplacementTarif(haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon))
+            : null,
         }),
       });
     } catch {
@@ -495,6 +543,11 @@ export default function RendezVousPage() {
                 { label: "Surface", value: `${formData.surface} m²` },
                 { label: "Type de toiture", value: TYPE_TOITURE_OPTIONS.find(o => o.value === formData.typeToiture)?.label || formData.typeToiture },
                 { label: "État", value: ETAT_GENERAL_OPTIONS.find(o => o.value === formData.etatGeneral)?.label || formData.etatGeneral },
+                { label: "Devis estimé HT", value: (() => {
+                  const h = getHonorairesTarif(formData.surface);
+                  const d = clientCoords ? getDeplacementTarif(haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon)) : null;
+                  return d !== null ? `${h + d} €` : `à partir de ${h + 50} €`;
+                })() },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between gap-4 text-sm">
                   <span className="text-slate-400 shrink-0">{label}</span>
@@ -686,6 +739,7 @@ export default function RendezVousPage() {
                   <AddressInput
                     value={formData.adresse}
                     onChange={(val) => updateField("adresse", val)}
+                    onCoordinates={(lat, lon) => setClientCoords({ lat, lon })}
                     error={errors.adresse}
                   />
                   <p className="text-slate-500 text-xs mt-1">Commencez à taper pour voir des suggestions</p>
@@ -708,16 +762,56 @@ export default function RendezVousPage() {
                   <input
                     type="range"
                     min={10}
-                    max={500}
-                    step={5}
+                    max={3000}
+                    step={10}
                     value={formData.surface}
                     onChange={e => updateField("surface", Number(e.target.value))}
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-slate-500 mt-1">
                     <span>10 m²</span>
-                    <span>500 m²</span>
+                    <span>3 000 m²</span>
                   </div>
+                  {/* Devis estimatif */}
+                  {(() => {
+                    const honoraires = getHonorairesTarif(formData.surface);
+                    const distance = clientCoords
+                      ? haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon)
+                      : null;
+                    const deplacement = distance !== null ? getDeplacementTarif(distance) : null;
+                    const total = deplacement !== null ? honoraires + deplacement : null;
+                    return (
+                      <div className="bg-slate-800/60 border border-orange-500/30 rounded-2xl p-5 mt-2">
+                        <h3 className="text-white font-semibold mb-4 flex items-center gap-2 text-sm">
+                          <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Estimation tarifaire
+                        </h3>
+                        <div className="space-y-2.5 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Honoraires expertise ({formData.surface} m²)</span>
+                            <span className="text-white font-semibold">{honoraires} € HT</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">
+                              Forfait déplacement{distance !== null ? ` (≈ ${Math.round(distance)} km)` : ""}
+                            </span>
+                            <span className="text-white font-semibold">
+                              {deplacement !== null ? `${deplacement} € HT` : <span className="text-slate-500 italic">selon adresse</span>}
+                            </span>
+                          </div>
+                          <div className="border-t border-slate-700 pt-3 flex justify-between items-center">
+                            <span className="text-white font-bold">Total estimé HT</span>
+                            <span className="text-orange-400 font-bold text-base">
+                              {total !== null ? `${total} €` : `à partir de ${honoraires + 50} €`}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-slate-500 text-xs mt-3">TVA 20% applicable · Tarif indicatif, confirmé après expertise</p>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Type de toiture */}
