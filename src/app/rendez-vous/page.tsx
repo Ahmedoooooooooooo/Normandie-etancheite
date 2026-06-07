@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 
@@ -379,10 +380,11 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 // ── Main Page ──────────────────────────────────────────────────────────
 export default function RendezVousPage() {
   const [step, setStep] = useState(1);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [clientCoords, setClientCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const router = useRouter();
 
   const [formData, setFormData] = useState<FormData>({
     date: "",
@@ -456,6 +458,43 @@ export default function RendezVousPage() {
     e.preventDefault();
     if (!validateStep3()) return;
     setIsSubmitting(true);
+
+    const honoraires = getHonorairesTarif(formData.surface);
+    const distance = clientCoords
+      ? haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon)
+      : null;
+    const deplacement = distance !== null ? getDeplacementTarif(distance) : 50;
+    const total_ht = honoraires + deplacement;
+    const tva = Math.round(total_ht * 0.2);
+    const total_ttc = total_ht + tva;
+    const devis_numero = `NE-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+
+    const devisPayload = {
+      prenom: formData.prenom,
+      nom: formData.nom,
+      telephone: formData.telephone,
+      email: formData.email,
+      societe: formData.societe,
+      adresse: formData.adresse,
+      date: formData.date,
+      time: formData.time,
+      surface: formData.surface,
+      typeToiture_label: TYPE_TOITURE_OPTIONS.find(o => o.value === formData.typeToiture)?.label || formData.typeToiture,
+      etatGeneral_label: ETAT_GENERAL_OPTIONS.find(o => o.value === formData.etatGeneral)?.label || formData.etatGeneral,
+      accessibilite_label: ACCESSIBILITE_OPTIONS.find(o => o.value === formData.accessibilite)?.label || formData.accessibilite,
+      description: formData.description,
+      honoraires,
+      deplacement,
+      total_ht,
+      tva,
+      total_ttc,
+      distance_km: distance ? Math.round(distance) : null,
+      date_formatee: formatDateFR(formData.date),
+      devis_numero,
+    };
+
+    sessionStorage.setItem("normandie_devis", JSON.stringify(devisPayload));
+
     try {
       await fetch("https://n8n.srv1591454.hstgr.cloud/webhook/18bc0126-ec6f-433c-89be-85f90b0a4bad", {
         method: "POST",
@@ -471,28 +510,22 @@ export default function RendezVousPage() {
           date_formatee: formatDateFR(formData.date),
           heure: formData.time,
           surface_m2: formData.surface,
-          type_toiture: TYPE_TOITURE_OPTIONS.find(o => o.value === formData.typeToiture)?.label || formData.typeToiture,
-          etat_general: ETAT_GENERAL_OPTIONS.find(o => o.value === formData.etatGeneral)?.label || formData.etatGeneral,
-          accessibilite: ACCESSIBILITE_OPTIONS.find(o => o.value === formData.accessibilite)?.label || formData.accessibilite,
+          type_toiture: devisPayload.typeToiture_label,
+          etat_general: devisPayload.etatGeneral_label,
+          accessibilite: devisPayload.accessibilite_label,
           description: formData.description,
-          devis_honoraires: getHonorairesTarif(formData.surface),
-          devis_deplacement: clientCoords
-            ? getDeplacementTarif(haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon))
-            : null,
-          devis_distance_km: clientCoords
-            ? Math.round(haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon))
-            : null,
-          devis_total: clientCoords
-            ? getHonorairesTarif(formData.surface) + getDeplacementTarif(haversineKm(COMPANY_LAT, COMPANY_LON, clientCoords.lat, clientCoords.lon))
-            : null,
+          devis_numero,
+          devis_honoraires: honoraires,
+          devis_deplacement: deplacement,
+          devis_distance_km: distance ? Math.round(distance) : null,
+          devis_total_ht: total_ht,
+          devis_total_ttc: total_ttc,
         }),
       });
-    } catch {
-      // Continue même si le webhook échoue
-    } finally {
-      setIsSubmitting(false);
-      setSubmitted(true);
-    }
+    } catch {}
+
+    setIsSubmitting(false);
+    router.push("/devis");
   };
 
   // ── Format date for display ─────────────────────────────────────────
