@@ -1,0 +1,54 @@
+{
+  "name": "Normandie Etancheite - RDV Zoho CalDAV",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "18bc0126-ec6f-433c-89be-85f90b0a4bad",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "18bc0126-ec6f-433c-89be-85f90b0a4bad"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://calendar.zoho.eu/caldav/TON_EMAIL_ZOHO/events/{{ $now.toMillis() }}.ics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/calendar; charset=utf-8",
+        "body": "=BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//NormandieEtancheite//RDV//FR\r\nBEGIN:VEVENT\r\nUID:{{ $now.toMillis() }}@normandie-etancheite.fr\r\nDTSTAMP:{{ $now.format('YYYYMMDDTHHmmss') }}Z\r\nDTSTART;TZID=Europe/Paris:{{ $json.body.date.replace(/-/g, '') }}T{{ $json.body.heure.replace(':', '') }}00\r\nDTEND;TZID=Europe/Paris:{{ $json.body.date.replace(/-/g, '') }}T{{ String(Number($json.body.heure.split(':')[0]) + 1).padStart(2, '0') + $json.body.heure.split(':')[1] }}00\r\nSUMMARY:RDV - {{ $json.body.prenom }} {{ $json.body.nom }}\r\nDESCRIPTION:Tel: {{ $json.body.telephone }} | Email: {{ $json.body.email }} | Adresse: {{ $json.body.adresse }} | Surface: {{ $json.body.surface_m2 }}m2 | Type: {{ $json.body.type_toiture }}\r\nEND:VEVENT\r\nEND:VCALENDAR",
+        "options": {}
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "Zoho Calendar CalDAV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Zoho Calendar CalDAV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
