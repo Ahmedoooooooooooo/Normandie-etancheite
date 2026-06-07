@@ -22,7 +22,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($json.body) }}",
+        "body": "={{ JSON.stringify({ ...$json.body, start_datetime: $json.body.date + 'T' + $json.body.heure + ':00', end_datetime: $json.body.date + 'T' + String(Number($json.body.heure.split(':')[0]) + 1).padStart(2, '0') + ':' + $json.body.heure.split(':')[1] + ':00' }) }}",
         "options": {}
       },
       "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
