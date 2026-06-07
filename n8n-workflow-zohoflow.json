@@ -20,8 +20,9 @@
         "method": "POST",
         "url": "https://flow.zoho.eu/20115276691/flow/webhook/incoming?zapikey=1001.741623256436f63c2eb2f1a59ee3550f.764ec305cd51ef4af1e46280f888be86&isdebug=false",
         "sendBody": true,
-        "contentType": "json",
-        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.body) }}",
         "options": {}
       },
       "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
