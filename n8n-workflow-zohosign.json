@@ -1,0 +1,171 @@
+{
+  "name": "Normandie - Zoho Sign",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zoho-sign-create",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Webhook - Create Sign Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sign.zoho.eu/api/v1/requests",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ JSON.stringify({\n  requests: {\n    request_name: \"Devis \" + $json.devis_numero,\n    actions: [{\n      action_type: \"SIGN\",\n      recipient_name: $json.prenom + \" \" + $json.nom,\n      recipient_email: $json.email,\n      signing_order: 1,\n      is_embedded: 1,\n      redirect_url: \"https://ahmedoooooooooooo.github.io/Normandie-etancheite/devis/signe\",\n      fields: {\n        date_signed: [{\n          field_label: \"Signature\",\n          field_type_name: \"Signature\",\n          is_mandatory: 1,\n          location: {\n            page_no: 1,\n            x_coord: 60,\n            y_coord: 680,\n            abs_width: 200,\n            abs_height: 50\n          }\n        }]\n      }\n    }],\n    notes: \"Devis \" + $json.devis_numero + \" — \" + $json.prenom + \" \" + $json.nom + \" — \" + $json.adresse + \" — Total TTC: \" + $json.devis_total_ttc + \"€\",\n    expiration_days: 30,\n    is_sequential: true,\n    callback_url: \"https://n8n.srv1591454.hstgr.cloud/webhook/zoho-sign-complete\"\n  }\n}) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "HTTP Request - Zoho Sign Create",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "zoho-sign-oauth2",
+          "name": "Zoho Sign OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ \"https://sign.zoho.eu/api/v1/requests/\" + $json.requests.request_id + \"/actions/\" + $json.requests.actions[0].action_id + \"/embedtoken\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {}
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "name": "HTTP Request - Get Embed Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [720, 300],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "zoho-sign-oauth2",
+          "name": "Zoho Sign OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { embed_link: $json.embedtoken.embed_link, request_id: $('HTTP Request - Zoho Sign Create').item.json.requests.request_id } }}",
+        "options": {}
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [960, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zoho-sign-complete",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "Webhook - Sign Complete",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 560],
+      "webhookId": "e5f6a7b8-c9d0-1234-efab-345678901234"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://flow.zoho.eu/20115276691/flow/webhook/incoming?zapikey=1001.0357498613ad66f38eac5f7da439eaf6.19e9fad4d6cc446074c97203f552a1b7&isdebug=false",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  request_id: $json.body.requests.request_id,\n  request_name: $json.body.requests.request_name,\n  request_status: $json.body.requests.request_status,\n  recipient_name: $json.body.requests.actions[0].recipient_name,\n  recipient_email: $json.body.requests.actions[0].recipient_email,\n  action_status: $json.body.requests.actions[0].action_status,\n  signed_on: $json.body.requests.actions[0].action_time\n}) }}",
+        "options": {}
+      },
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "HTTP Request - Notify Zoho Flow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 560]
+    }
+  ],
+  "connections": {
+    "Webhook - Create Sign Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Zoho Sign Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Zoho Sign Create": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Get Embed Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Get Embed Token": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Sign Complete": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Notify Zoho Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": ""
+  },
+  "tags": []
+}

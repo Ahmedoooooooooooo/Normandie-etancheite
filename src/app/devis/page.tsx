@@ -1,10 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-
-const N8N_WEBHOOK = 'https://n8n.srv1591454.hstgr.cloud/webhook/18bc0126-ec6f-433c-89be-85f90b0a4bad'
 
 interface DevisData {
   date: string
@@ -30,15 +28,14 @@ interface DevisData {
   devis_signe: boolean
 }
 
+type View = 'quote' | 'requesting' | 'signing' | 'success' | 'error'
+
 export default function DevisPage() {
   const router = useRouter()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const [devis, setDevis] = useState<DevisData | null>(null)
-  const [hasSigned, setHasSigned] = useState(false)
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [submitError, setSubmitError] = useState('')
+  const [view, setView] = useState<View>('quote')
+  const [signingUrl, setSigningUrl] = useState('')
+  const [signError, setSignError] = useState('')
 
   useEffect(() => {
     const stored = sessionStorage.getItem('normandie_devis')
@@ -49,78 +46,35 @@ export default function DevisPage() {
     setDevis(JSON.parse(stored))
   }, [router])
 
-  function getPos(e: React.MouseEvent | React.TouchEvent): { x: number; y: number } {
-    const canvas = canvasRef.current!
-    const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    if ('touches' in e) {
-      return {
-        x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY,
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'zoho_sign_completed') {
+        setView('success')
       }
     }
-    return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY,
-    }
-  }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
 
-  function startDraw(e: React.MouseEvent | React.TouchEvent) {
-    e.preventDefault()
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')!
-    const { x, y } = getPos(e)
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    setIsDrawing(true)
-  }
-
-  function draw(e: React.MouseEvent | React.TouchEvent) {
-    e.preventDefault()
-    if (!isDrawing) return
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')!
-    ctx.lineWidth = 2.5
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-    ctx.strokeStyle = '#1e3a5f'
-    const { x, y } = getPos(e)
-    ctx.lineTo(x, y)
-    ctx.stroke()
-    setHasSigned(true)
-  }
-
-  function stopDraw() {
-    setIsDrawing(false)
-  }
-
-  function clearCanvas() {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')!
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    setHasSigned(false)
-  }
-
-  async function handleSign() {
-    if (!devis || !hasSigned) return
-    setLoading(true)
-    setSubmitError('')
+  const handleRequestSign = async () => {
+    setView('requesting')
     try {
-      await fetch(N8N_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...devis, devis_signe: true }),
-      })
-      setSuccess(true)
-      sessionStorage.removeItem('normandie_devis')
-    } catch {
-      setSubmitError('Une erreur est survenue. Vérifiez votre connexion et réessayez.')
-    } finally {
-      setLoading(false)
+      const res = await fetch(
+        'https://n8n.srv1591454.hstgr.cloud/webhook/zoho-sign-create',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(devis),
+        }
+      )
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      if (!json.embed_link) throw new Error('embed_link manquant')
+      setSigningUrl(json.embed_link)
+      setView('signing')
+    } catch (err) {
+      setSignError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setView('error')
     }
   }
 
@@ -129,49 +83,96 @@ export default function DevisPage() {
   const tva = Math.round((devis.devis_total_ttc - devis.devis_total_ht) * 100) / 100
   const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
-  if (success) {
+  if (view === 'requesting') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-lg p-10 max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-[#1e3a5f] mb-3">Rendez-vous confirmé !</h1>
-          <p className="text-slate-500 mb-6">
-            Votre rendez-vous du{' '}
-            <strong className="text-[#1e3a5f]">{devis.date_formatee}</strong> à{' '}
-            <strong className="text-[#1e3a5f]">{devis.heure}</strong> a bien été enregistré.
-          </p>
-          <div className="bg-slate-50 rounded-xl p-4 mb-6 text-left text-sm space-y-2">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Devis n°</span>
-              <span className="font-semibold text-[#1e3a5f]">{devis.devis_numero}</span>
-            </div>
-            <div className="flex justify-between gap-4">
-              <span className="text-slate-500 shrink-0">Adresse</span>
-              <span className="font-semibold text-[#1e3a5f] text-right">{devis.adresse}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Total TTC</span>
-              <span className="font-bold text-orange-500">{devis.devis_total_ttc.toFixed(2)} €</span>
-            </div>
-          </div>
-          <p className="text-slate-400 text-sm mb-6">
-            Vous recevrez une confirmation par email à l&apos;adresse {devis.email}
-          </p>
-          <Link
-            href="/"
-            className="inline-block bg-[#1e3a5f] hover:bg-[#162d4a] text-white font-semibold px-8 py-3 rounded-lg transition-colors"
-          >
-            Retour à l&apos;accueil
-          </Link>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <svg className="w-12 h-12 animate-spin text-orange-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <p className="text-slate-600 font-medium">Préparation du document en cours...</p>
         </div>
       </div>
     )
   }
 
+  if (view === 'signing') {
+    return (
+      <div className="fixed inset-0 z-50 bg-white">
+        <div className="bg-slate-900 text-white px-4 py-2 flex items-center gap-3">
+          <span className="font-semibold">Signature — Devis {devis.devis_numero}</span>
+          <span className="text-slate-400 text-sm">Zoho Sign</span>
+        </div>
+        <iframe
+          src={signingUrl}
+          className="w-full border-0"
+          style={{ height: 'calc(100vh - 40px)' }}
+          title="Signature électronique"
+          allow="camera"
+        />
+      </div>
+    )
+  }
+
+  if (view === 'success') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Devis signé !</h1>
+          <p className="text-slate-600 mb-6">Votre rendez-vous est confirmé. Vous recevrez une confirmation par email.</p>
+          <div className="bg-slate-50 rounded-xl p-4 text-left text-sm space-y-2 mb-6">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Date</span>
+              <span className="font-medium">{devis?.date_formatee}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Heure</span>
+              <span className="font-medium">{devis?.heure}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Devis</span>
+              <span className="font-medium">{devis?.devis_numero}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Total TTC</span>
+              <span className="font-medium text-orange-600">{devis?.devis_total_ttc?.toFixed(2)} €</span>
+            </div>
+          </div>
+          <a href="/Normandie-etancheite" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-semibold hover:bg-slate-800 transition-colors">
+            Retour à l&apos;accueil
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  if (view === 'error') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow p-8 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-slate-900 mb-2">Erreur de signature</h1>
+          <p className="text-slate-600 mb-2">Impossible de préparer le document.</p>
+          {signError && <p className="text-red-500 text-sm mb-4 font-mono">{signError}</p>}
+          <button onClick={() => setView('quote')} className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-600">
+            Réessayer
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // view === 'quote'
   return (
     <div className="min-h-screen bg-slate-50">
       <nav className="bg-white shadow-sm print:hidden">
@@ -288,83 +289,25 @@ export default function DevisPage() {
           </p>
         </div>
 
-        {/* Signature */}
+        {/* Electronic Signature */}
         <div className="bg-white rounded-2xl shadow-md p-8">
-          <h2 className="text-lg font-bold text-[#1e3a5f] mb-1">Signature du client</h2>
-          <p className="text-slate-500 text-sm mb-5">
-            Signez ci-dessous pour confirmer votre rendez-vous
-          </p>
+          <h2 className="text-lg font-bold text-[#1e3a5f] mb-1">Signature électronique</h2>
 
-          <div className="relative border-2 border-dashed border-slate-200 rounded-xl overflow-hidden bg-slate-50">
-            <canvas
-              ref={canvasRef}
-              width={600}
-              height={150}
-              className="w-full touch-none cursor-crosshair"
-              onMouseDown={startDraw}
-              onMouseMove={draw}
-              onMouseUp={stopDraw}
-              onMouseLeave={stopDraw}
-              onTouchStart={startDraw}
-              onTouchMove={draw}
-              onTouchEnd={stopDraw}
-            />
-            {!hasSigned && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <p className="text-slate-300 text-sm select-none">Signez ici</p>
-              </div>
-            )}
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+            <p className="text-blue-800 text-sm">
+              La signature sera réalisée via Zoho Sign, solution certifiée eIDAS. Vous recevrez une copie signée par email.
+            </p>
           </div>
-
-          <div className="flex items-center justify-between mt-3">
-            <button
-              onClick={clearCanvas}
-              className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Effacer
-            </button>
-            <span className={`text-xs ${hasSigned ? 'text-green-500' : 'text-slate-400'}`}>
-              {hasSigned ? '✓ Signature enregistrée' : 'Signature requise'}
-            </span>
-          </div>
-
-          {submitError && (
-            <div className="mt-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-600 text-sm">
-              {submitError}
-            </div>
-          )}
 
           <button
-            onClick={handleSign}
-            disabled={!hasSigned || loading}
-            className="w-full mt-6 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-lg"
+            onClick={handleRequestSign}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-lg sm:w-auto sm:px-10"
           >
-            {loading ? (
-              <>
-                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Envoi en cours...
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Valider et confirmer le rendez-vous
-              </>
-            )}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H8v-2.414a2 2 0 01.586-1.414z" />
+            </svg>
+            Signer électroniquement avec Zoho Sign
           </button>
-
-          {!hasSigned && (
-            <p className="text-center text-slate-400 text-xs mt-3">
-              Veuillez signer le devis avant de confirmer
-            </p>
-          )}
         </div>
       </div>
     </div>
