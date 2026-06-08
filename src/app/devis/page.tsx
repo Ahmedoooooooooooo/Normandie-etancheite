@@ -28,13 +28,12 @@ interface DevisData {
   devis_signe: boolean
 }
 
-type View = 'quote' | 'requesting' | 'signing' | 'success' | 'error'
+type View = 'quote' | 'requesting' | 'success' | 'error'
 
 export default function DevisPage() {
   const router = useRouter()
   const [devis, setDevis] = useState<DevisData | null>(null)
   const [view, setView] = useState<View>('quote')
-  const [signingUrl, setSigningUrl] = useState('')
   const [signError, setSignError] = useState('')
 
   useEffect(() => {
@@ -45,16 +44,6 @@ export default function DevisPage() {
     }
     setDevis(JSON.parse(stored))
   }, [router])
-
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      if (e.data?.type === 'zoho_sign_completed') {
-        setView('success')
-      }
-    }
-    window.addEventListener('message', handler)
-    return () => window.removeEventListener('message', handler)
-  }, [])
 
   const handleRequestSign = async () => {
     setView('requesting')
@@ -68,10 +57,7 @@ export default function DevisPage() {
         }
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      if (!json.embed_link) throw new Error('embed_link manquant')
-      setSigningUrl(json.embed_link)
-      setView('signing')
+      setView('success')
     } catch (err) {
       setSignError(err instanceof Error ? err.message : 'Erreur inconnue')
       setView('error')
@@ -91,26 +77,8 @@ export default function DevisPage() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <p className="text-slate-600 font-medium">Préparation du document en cours...</p>
+          <p className="text-slate-600 font-medium">Envoi du document en cours...</p>
         </div>
-      </div>
-    )
-  }
-
-  if (view === 'signing') {
-    return (
-      <div className="fixed inset-0 z-50 bg-white">
-        <div className="bg-slate-900 text-white px-4 py-2 flex items-center gap-3">
-          <span className="font-semibold">Signature — Devis {devis.devis_numero}</span>
-          <span className="text-slate-400 text-sm">Zoho Sign</span>
-        </div>
-        <iframe
-          src={signingUrl}
-          className="w-full border-0"
-          style={{ height: 'calc(100vh - 40px)' }}
-          title="Signature électronique"
-          allow="camera"
-        />
       </div>
     )
   }
@@ -121,27 +89,38 @@ export default function DevisPage() {
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Devis signé !</h1>
-          <p className="text-slate-600 mb-6">Votre rendez-vous est confirmé. Vous recevrez une confirmation par email.</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Email envoyé !</h1>
+          <p className="text-slate-600 mb-2">
+            Un email de signature Zoho Sign a été envoyé à
+          </p>
+          <p className="font-semibold text-[#1e3a5f] mb-6">{devis.email}</p>
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-left text-sm text-blue-800">
+            <p className="font-semibold mb-1">Prochaines étapes :</p>
+            <ol className="list-decimal list-inside space-y-1">
+              <li>Ouvrez l&apos;email Zoho Sign</li>
+              <li>Signez électroniquement le devis</li>
+              <li>Votre RDV est créé automatiquement</li>
+            </ol>
+          </div>
           <div className="bg-slate-50 rounded-xl p-4 text-left text-sm space-y-2 mb-6">
             <div className="flex justify-between">
               <span className="text-slate-500">Date</span>
-              <span className="font-medium">{devis?.date_formatee}</span>
+              <span className="font-medium">{devis.date_formatee}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Heure</span>
-              <span className="font-medium">{devis?.heure}</span>
+              <span className="font-medium">{devis.heure}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Devis</span>
-              <span className="font-medium">{devis?.devis_numero}</span>
+              <span className="font-medium">{devis.devis_numero}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Total TTC</span>
-              <span className="font-medium text-orange-600">{devis?.devis_total_ttc?.toFixed(2)} €</span>
+              <span className="font-medium text-orange-600">{devis.devis_total_ttc.toFixed(2)} €</span>
             </div>
           </div>
           <a href="/Normandie-etancheite" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-semibold hover:bg-slate-800 transition-colors">
