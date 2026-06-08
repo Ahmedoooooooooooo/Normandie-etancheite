@@ -127,8 +127,6 @@ export default function DevisPage() {
   const handleSign = async () => {
     if (!hasSignature || !data) return;
     setIsSubmitting(true);
-    const canvas = canvasRef.current;
-    const signatureData = canvas?.toDataURL("image/png");
     try {
       await fetch(
         "https://n8n.srv1591454.hstgr.cloud/webhook/18bc0126-ec6f-433c-89be-85f90b0a4bad",
@@ -136,14 +134,27 @@ export default function DevisPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            action: "devis_signe",
-            devis_numero: data.devis_numero,
-            client: `${data.prenom} ${data.nom}`,
-            email: data.email,
+            prenom: data.prenom,
+            nom: data.nom,
             telephone: data.telephone,
+            email: data.email,
+            societe: data.societe,
             adresse: data.adresse,
+            date: data.date,
+            date_formatee: data.date_formatee,
+            heure: data.time,
+            surface_m2: data.surface,
+            type_toiture: data.typeToiture_label,
+            etat_general: data.etatGeneral_label,
+            accessibilite: data.accessibilite_label,
+            description: data.description,
+            devis_numero: data.devis_numero,
+            devis_honoraires: data.honoraires,
+            devis_deplacement: data.deplacement,
+            devis_distance_km: data.distance_km,
+            devis_total_ht: data.total_ht,
             devis_total_ttc: data.total_ttc,
-            signature_png: signatureData,
+            devis_signe: true,
           }),
         }
       );

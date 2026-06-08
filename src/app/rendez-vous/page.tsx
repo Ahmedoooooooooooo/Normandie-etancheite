@@ -494,36 +494,6 @@ export default function RendezVousPage() {
     };
 
     sessionStorage.setItem("normandie_devis", JSON.stringify(devisPayload));
-
-    try {
-      await fetch("https://n8n.srv1591454.hstgr.cloud/webhook/18bc0126-ec6f-433c-89be-85f90b0a4bad", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prenom: formData.prenom,
-          nom: formData.nom,
-          telephone: formData.telephone,
-          email: formData.email,
-          societe: formData.societe,
-          adresse: formData.adresse,
-          date: formData.date,
-          date_formatee: formatDateFR(formData.date),
-          heure: formData.time,
-          surface_m2: formData.surface,
-          type_toiture: devisPayload.typeToiture_label,
-          etat_general: devisPayload.etatGeneral_label,
-          accessibilite: devisPayload.accessibilite_label,
-          description: formData.description,
-          devis_numero,
-          devis_honoraires: honoraires,
-          devis_deplacement: deplacement,
-          devis_distance_km: distance ? Math.round(distance) : null,
-          devis_total_ht: total_ht,
-          devis_total_ttc: total_ttc,
-        }),
-      });
-    } catch {}
-
     setIsSubmitting(false);
     router.push("/devis");
   };
