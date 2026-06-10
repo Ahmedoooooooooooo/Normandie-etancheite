@@ -1,20 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00']
 const AFTERNOON_SLOTS = ['14:00', '15:00', '16:00', '17:00']
+const APPOINTMENT_DURATION_MINUTES = 60
+const AVERAGE_SPEED_KMH = 50
 
-function isAfternoonClosed(date: string): boolean {
-  if (!date) return false
-  const day = new Date(date + 'T12:00:00').getDay()
-  return day === 3 || day === 5 // Mercredi ou Vendredi
-}
+// Webhook n8n qui interroge le calendrier "Expertise toiture" via Zoho Flow
+// et renvoie les rendez-vous déjà programmés pour une date donnée.
+const GET_APPOINTMENTS_WEBHOOK_URL = 'https://n8n.srv1591454.hstgr.cloud/webhook/get-appointments'
 
 const COMPANY_LAT = 48.7480
 const COMPANY_LON = -0.5636
+
+type DayClosure = 'none' | 'afternoon' | 'full'
+
+function getDayClosure(date: string): DayClosure {
+  if (!date) return 'none'
+  const day = new Date(date + 'T12:00:00').getDay()
+  if (day === 5) return 'full' // Vendredi : pas de rendez-vous
+  if (day === 3) return 'afternoon' // Mercredi : pas de rendez-vous l'après-midi
+  return 'none'
+}
+
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
+}
 
 function getHonorairesTarif(surface: number): number {
   if (surface <= 50) return 150
@@ -40,6 +55,48 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLat / 2) ** 2 +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function travelTimeMinutes(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  return (haversineDistance(lat1, lon1, lat2, lon2) / AVERAGE_SPEED_KMH) * 60
+}
+
+async function geocodeAddress(address: string): Promise<{ lat: number; lon: number } | null> {
+  try {
+    const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}&limit=1`)
+    const data = await res.json()
+    if (data.features && data.features.length > 0) {
+      const [lon, lat] = data.features[0].geometry.coordinates
+      return { lat, lon }
+    }
+  } catch {
+    // géocodage indisponible
+  }
+  return null
+}
+
+interface ExistingAppointment {
+  heure: string
+  lat: number
+  lon: number
+}
+
+async function fetchExistingAppointments(date: string): Promise<ExistingAppointment[]> {
+  try {
+    const res = await fetch(`${GET_APPOINTMENTS_WEBHOOK_URL}?date=${date}`)
+    if (!res.ok) return []
+    const data = await res.json()
+    const list: Array<{ heure: string; adresse: string }> = Array.isArray(data?.appointments) ? data.appointments : []
+    const geocoded = await Promise.all(
+      list.map(async (a) => {
+        const coords = await geocodeAddress(a.adresse)
+        return coords ? { heure: a.heure, lat: coords.lat, lon: coords.lon } : null
+      })
+    )
+    return geocoded.filter((a): a is ExistingAppointment => a !== null)
+  } catch {
+    return []
+  }
 }
 
 interface FormData {
@@ -76,33 +133,101 @@ const defaultForm: FormData = {
 
 export default function RendezVousPage() {
   const router = useRouter()
-  const [step, setStep] = useState(1)
   const [form, setForm] = useState<FormData>(defaultForm)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const [addressCoords, setAddressCoords] = useState<{ lat: number; lon: number } | null>(null)
+  const [geocoding, setGeocoding] = useState(false)
+  const [unavailableSlots, setUnavailableSlots] = useState<Set<string>>(new Set())
+  const [checkingAvailability, setCheckingAvailability] = useState(false)
+
   const today = new Date().toISOString().split('T')[0]
+  const dayClosure = getDayClosure(form.date)
 
   function set(field: keyof FormData, value: string | number) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  function step1Valid() {
-    return form.date !== '' && form.heure !== ''
-  }
+  // Géocode l'adresse saisie (avec un léger débounce) pour calculer les trajets
+  useEffect(() => {
+    const address = form.adresse.trim()
+    if (!address) {
+      setAddressCoords(null)
+      return
+    }
+    let cancelled = false
+    setGeocoding(true)
+    const timeout = setTimeout(async () => {
+      const coords = await geocodeAddress(address)
+      if (!cancelled) {
+        setAddressCoords(coords)
+        setGeocoding(false)
+      }
+    }, 800)
+    return () => {
+      cancelled = true
+      clearTimeout(timeout)
+    }
+  }, [form.adresse])
 
-  function step2Valid() {
+  // Dès que la date et l'adresse sont connues, vérifie les rendez-vous déjà
+  // programmés ce jour-là et grise les créneaux trop proches en distance
+  useEffect(() => {
+    if (!form.date || !addressCoords) {
+      setUnavailableSlots(new Set())
+      return
+    }
+    let cancelled = false
+    setCheckingAvailability(true)
+    fetchExistingAppointments(form.date).then((appointments) => {
+      if (cancelled) return
+      const unavailable = new Set<string>()
+      for (const slot of TIME_SLOTS) {
+        const slotStart = timeToMinutes(slot)
+        const slotEnd = slotStart + APPOINTMENT_DURATION_MINUTES
+        for (const appt of appointments) {
+          const apptStart = timeToMinutes(appt.heure)
+          const apptEnd = apptStart + APPOINTMENT_DURATION_MINUTES
+          const travel = travelTimeMinutes(addressCoords.lat, addressCoords.lon, appt.lat, appt.lon)
+          const overlap = slotStart < apptEnd && apptStart < slotEnd
+          const gapBefore = apptEnd <= slotStart && slotStart - apptEnd < travel
+          const gapAfter = slotEnd <= apptStart && apptStart - slotEnd < travel
+          if (overlap || gapBefore || gapAfter) {
+            unavailable.add(slot)
+            break
+          }
+        }
+      }
+      setUnavailableSlots(unavailable)
+      setCheckingAvailability(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [form.date, addressCoords])
+
+  // Réinitialise le créneau choisi s'il devient indisponible
+  useEffect(() => {
+    if (!form.heure) return
+    const blocked =
+      dayClosure === 'full' ||
+      (dayClosure === 'afternoon' && AFTERNOON_SLOTS.includes(form.heure)) ||
+      unavailableSlots.has(form.heure)
+    if (blocked) {
+      setForm((prev) => ({ ...prev, heure: '' }))
+    }
+  }, [form.date, form.heure, unavailableSlots, dayClosure])
+
+  function formValid() {
     return (
       form.prenom.trim() !== '' &&
       form.nom.trim() !== '' &&
       form.telephone.trim() !== '' &&
       form.email.trim() !== '' &&
-      form.adresse.trim() !== ''
-    )
-  }
-
-  function step3Valid() {
-    return (
+      form.adresse.trim() !== '' &&
+      form.date !== '' &&
+      form.heure !== '' &&
       form.surface_m2 > 0 &&
       form.type_toiture !== '' &&
       form.etat_general !== '' &&
@@ -114,19 +239,11 @@ export default function RendezVousPage() {
     setLoading(true)
     setError('')
 
-    let distanceKm = 0
-    try {
-      const res = await fetch(
-        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(form.adresse)}&limit=1`
-      )
-      const data = await res.json()
-      if (data.features && data.features.length > 0) {
-        const [lon, lat] = data.features[0].geometry.coordinates
-        distanceKm = haversineDistance(COMPANY_LAT, COMPANY_LON, lat, lon)
-      }
-    } catch {
-      // geocoding failed, distance stays 0
+    let coords = addressCoords
+    if (!coords) {
+      coords = await geocodeAddress(form.adresse)
     }
+    const distanceKm = coords ? haversineDistance(COMPANY_LAT, COMPANY_LON, coords.lat, coords.lon) : 0
 
     const honoraires = getHonorairesTarif(form.surface_m2)
     const deplacement = getDeplacementTarif(distanceKm)
@@ -176,297 +293,264 @@ export default function RendezVousPage() {
       </nav>
 
       <div className="max-w-2xl mx-auto px-4 py-10">
-        {/* Step indicator */}
-        <div className="flex items-center justify-center gap-2 mb-10">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="flex items-center gap-2">
-              <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
-                  s === step
-                    ? 'bg-orange-500 text-white'
-                    : s < step
-                    ? 'bg-[#1e3a5f] text-white'
-                    : 'bg-slate-200 text-slate-400'
-                }`}
-              >
-                {s < step ? (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  s
-                )}
-              </div>
-              {s < 3 && <div className={`w-16 h-1 rounded ${s < step ? 'bg-[#1e3a5f]' : 'bg-slate-200'}`} />}
-            </div>
-          ))}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-[#1e3a5f] mb-1">Demande de devis &amp; rendez-vous</h1>
+          <p className="text-slate-500">
+            Remplissez ce formulaire : nous calculons votre devis et planifions une expertise sur place
+          </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-md p-8">
-          {/* Step 1 — Date & heure */}
-          {step === 1 && (
-            <div>
-              <h1 className="text-2xl font-bold text-[#1e3a5f] mb-1">Choisissez une date</h1>
-              <p className="text-slate-500 mb-8">Sélectionnez le jour et le créneau horaire souhaité</p>
+        <div className="bg-white rounded-2xl shadow-md p-8 space-y-10">
+          {/* Coordonnées */}
+          <section>
+            <h2 className="text-lg font-bold text-[#1e3a5f] mb-4">Vos coordonnées</h2>
 
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Date de l&apos;intervention</label>
-                <input
-                  type="date"
-                  min={today}
-                  value={form.date}
-                  onChange={(e) => {
-                    const newDate = e.target.value
-                    setForm((prev) => ({
-                      ...prev,
-                      date: newDate,
-                      heure: isAfternoonClosed(newDate) && AFTERNOON_SLOTS.includes(prev.heure) ? '' : prev.heure,
-                    }))
-                  }}
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                />
-                {isAfternoonClosed(form.date) && (
-                  <p className="text-xs text-orange-500 mt-2">
-                    Pas de rendez-vous l&apos;après-midi le mercredi et le vendredi.
-                  </p>
-                )}
-              </div>
-
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3">Créneau horaire</label>
-                <div className="grid grid-cols-4 gap-3">
-                  {TIME_SLOTS.map((slot) => {
-                    const disabled = isAfternoonClosed(form.date) && AFTERNOON_SLOTS.includes(slot)
-                    return (
-                      <button
-                        key={slot}
-                        onClick={() => !disabled && set('heure', slot)}
-                        disabled={disabled}
-                        className={`py-3 rounded-lg text-sm font-semibold border-2 transition-colors ${
-                          disabled
-                            ? 'border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed'
-                            : form.heure === slot
-                            ? 'bg-orange-500 border-orange-500 text-white'
-                            : 'border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2 — Coordonnées client */}
-          {step === 2 && (
-            <div>
-              <h1 className="text-2xl font-bold text-[#1e3a5f] mb-1">Vos coordonnées</h1>
-              <p className="text-slate-500 mb-8">Ces informations apparaîtront sur votre devis</p>
-
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Prénom *</label>
-                  <input
-                    type="text"
-                    value={form.prenom}
-                    onChange={(e) => set('prenom', e.target.value)}
-                    placeholder="Jean"
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Nom *</label>
-                  <input
-                    type="text"
-                    value={form.nom}
-                    onChange={(e) => set('nom', e.target.value)}
-                    placeholder="Dupont"
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Téléphone *</label>
-                  <input
-                    type="tel"
-                    value={form.telephone}
-                    onChange={(e) => set('telephone', e.target.value)}
-                    placeholder="06 12 34 56 78"
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Email *</label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => set('email', e.target.value)}
-                    placeholder="jean@exemple.fr"
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Société <span className="text-slate-400 font-normal">(optionnel)</span>
-                </label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Prénom *</label>
                 <input
                   type="text"
-                  value={form.societe}
-                  onChange={(e) => set('societe', e.target.value)}
-                  placeholder="Nom de votre entreprise"
+                  value={form.prenom}
+                  onChange={(e) => set('prenom', e.target.value)}
+                  placeholder="Jean"
                   className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Adresse du chantier *</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Nom *</label>
                 <input
                   type="text"
-                  value={form.adresse}
-                  onChange={(e) => set('adresse', e.target.value)}
-                  placeholder="12 rue de la Paix, 61000 Alençon"
+                  value={form.nom}
+                  onChange={(e) => set('nom', e.target.value)}
+                  placeholder="Dupont"
                   className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                 />
-                <p className="text-xs text-slate-400 mt-1">Utilisée pour calculer les frais de déplacement</p>
               </div>
             </div>
-          )}
 
-          {/* Step 3 — Informations chantier */}
-          {step === 3 && (
-            <div>
-              <h1 className="text-2xl font-bold text-[#1e3a5f] mb-1">Votre chantier</h1>
-              <p className="text-slate-500 mb-8">Ces informations permettent d&apos;établir votre devis</p>
-
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Surface approximative (m²) *</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={form.surface_m2 || ''}
-                  onChange={(e) => set('surface_m2', parseInt(e.target.value) || 0)}
-                  placeholder="Ex : 120"
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Type de toiture *</label>
-                  <select
-                    value={form.type_toiture}
-                    onChange={(e) => set('type_toiture', e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
-                  >
-                    <option value="">Sélectionner</option>
-                    {['Ardoise', 'Tuile', 'Zinc', 'Bitume', 'EPDM', 'Autre'].map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">État général *</label>
-                  <select
-                    value={form.etat_general}
-                    onChange={(e) => set('etat_general', e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
-                  >
-                    <option value="">Sélectionner</option>
-                    {['Bon état', 'Dégradé', 'Mauvais état', 'À rénover'].map((e) => (
-                      <option key={e} value={e}>{e}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Accessibilité *</label>
-                  <select
-                    value={form.accessibilite}
-                    onChange={(e) => set('accessibilite', e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
-                  >
-                    <option value="">Sélectionner</option>
-                    {['Facile', 'Difficile', 'Très difficile'].map((a) => (
-                      <option key={a} value={a}>{a}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Description des travaux <span className="text-slate-400 font-normal">(optionnel)</span>
-                </label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => set('description', e.target.value)}
-                  rows={4}
-                  placeholder="Décrivez le problème ou les travaux souhaités..."
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none"
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Téléphone *</label>
+                <input
+                  type="tel"
+                  value={form.telephone}
+                  onChange={(e) => set('telephone', e.target.value)}
+                  placeholder="06 12 34 56 78"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Email *</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => set('email', e.target.value)}
+                  placeholder="jean@exemple.fr"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                 />
               </div>
             </div>
-          )}
 
-          {/* Navigation buttons */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
-            {step > 1 ? (
-              <button
-                onClick={() => setStep((s) => s - 1)}
-                className="flex items-center gap-2 text-slate-500 hover:text-slate-700 font-semibold transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Retour
-              </button>
-            ) : (
-              <div />
-            )}
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Société <span className="text-slate-400 font-normal">(optionnel)</span>
+              </label>
+              <input
+                type="text"
+                value={form.societe}
+                onChange={(e) => set('societe', e.target.value)}
+                placeholder="Nom de votre entreprise"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+              />
+            </div>
 
-            {step < 3 ? (
-              <button
-                onClick={() => setStep((s) => s + 1)}
-                disabled={step === 1 ? !step1Valid() : !step2Valid()}
-                className="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
-              >
-                Suivant
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={!step3Valid() || loading}
-                className="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Calcul du devis...
-                  </>
-                ) : (
-                  <>
-                    Voir mon devis
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </>
-                )}
-              </button>
-            )}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Adresse du chantier *</label>
+              <input
+                type="text"
+                value={form.adresse}
+                onChange={(e) => set('adresse', e.target.value)}
+                placeholder="12 rue de la Paix, 61000 Alençon"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                {geocoding
+                  ? 'Vérification de l’adresse...'
+                  : 'Utilisée pour calculer les frais de déplacement et les disponibilités'}
+              </p>
+            </div>
+          </section>
+
+          <div className="border-t border-slate-100" />
+
+          {/* Date & créneau */}
+          <section>
+            <h2 className="text-lg font-bold text-[#1e3a5f] mb-4">Date et créneau du rendez-vous</h2>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Date de l&apos;intervention</label>
+              <input
+                type="date"
+                min={today}
+                value={form.date}
+                onChange={(e) => set('date', e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+              />
+              {dayClosure === 'full' && (
+                <p className="text-xs text-orange-500 mt-2">
+                  Nous ne travaillons pas le vendredi. Merci de choisir un autre jour.
+                </p>
+              )}
+              {dayClosure === 'afternoon' && (
+                <p className="text-xs text-orange-500 mt-2">
+                  Pas de rendez-vous l&apos;après-midi le mercredi — seuls les créneaux du matin sont disponibles.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3">Créneau horaire</label>
+              <div className="grid grid-cols-4 gap-3">
+                {TIME_SLOTS.map((slot) => {
+                  const closedByDay = dayClosure === 'full' || (dayClosure === 'afternoon' && AFTERNOON_SLOTS.includes(slot))
+                  const closedByTravel = unavailableSlots.has(slot)
+                  const disabled = closedByDay || closedByTravel
+                  return (
+                    <button
+                      key={slot}
+                      onClick={() => !disabled && set('heure', slot)}
+                      disabled={disabled}
+                      title={closedByTravel ? 'Temps de trajet insuffisant avec un autre rendez-vous ce jour-là' : undefined}
+                      className={`py-3 rounded-lg text-sm font-semibold border-2 transition-colors ${
+                        disabled
+                          ? 'border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed'
+                          : form.heure === slot
+                          ? 'bg-orange-500 border-orange-500 text-white'
+                          : 'border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500'
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {checkingAvailability && (
+                <p className="text-xs text-slate-400 mt-2">Vérification des disponibilités selon vos autres rendez-vous...</p>
+              )}
+              {!checkingAvailability && addressCoords && unavailableSlots.size > 0 && (
+                <p className="text-xs text-slate-400 mt-2">
+                  Certains créneaux grisés sont indisponibles : temps de trajet insuffisant avec un autre rendez-vous ce jour-là.
+                </p>
+              )}
+              {!form.adresse.trim() && (
+                <p className="text-xs text-slate-400 mt-2">
+                  Renseignez votre adresse ci-dessus pour affiner les disponibilités selon les trajets.
+                </p>
+              )}
+            </div>
+          </section>
+
+          <div className="border-t border-slate-100" />
+
+          {/* Chantier */}
+          <section>
+            <h2 className="text-lg font-bold text-[#1e3a5f] mb-4">Votre chantier</h2>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Surface approximative (m²) *</label>
+              <input
+                type="number"
+                min={1}
+                value={form.surface_m2 || ''}
+                onChange={(e) => set('surface_m2', parseInt(e.target.value) || 0)}
+                placeholder="Ex : 120"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Type de toiture *</label>
+                <select
+                  value={form.type_toiture}
+                  onChange={(e) => set('type_toiture', e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                >
+                  <option value="">Sélectionner</option>
+                  {['Ardoise', 'Tuile', 'Zinc', 'Bitume', 'EPDM', 'Autre'].map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">État général *</label>
+                <select
+                  value={form.etat_general}
+                  onChange={(e) => set('etat_general', e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                >
+                  <option value="">Sélectionner</option>
+                  {['Bon état', 'Dégradé', 'Mauvais état', 'À rénover'].map((e) => (
+                    <option key={e} value={e}>{e}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Accessibilité *</label>
+                <select
+                  value={form.accessibilite}
+                  onChange={(e) => set('accessibilite', e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                >
+                  <option value="">Sélectionner</option>
+                  {['Facile', 'Difficile', 'Très difficile'].map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Description des travaux <span className="text-slate-400 font-normal">(optionnel)</span>
+              </label>
+              <textarea
+                value={form.description}
+                onChange={(e) => set('description', e.target.value)}
+                rows={4}
+                placeholder="Décrivez le problème ou les travaux souhaités..."
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none"
+              />
+            </div>
+          </section>
+
+          {/* Soumission */}
+          <div className="pt-2 border-t border-slate-100">
+            <button
+              onClick={handleSubmit}
+              disabled={!formValid() || loading}
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold px-8 py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Calcul du devis...
+                </>
+              ) : (
+                <>
+                  Voir mon devis
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </>
+              )}
+            </button>
+            {error && <p className="text-red-500 text-sm mt-3 text-center">{error}</p>}
           </div>
-
-          {error && <p className="text-red-500 text-sm mt-3 text-center">{error}</p>}
         </div>
       </div>
     </div>
