@@ -24,7 +24,7 @@
           "parameters": [
             {
               "name": "zapikey",
-              "value": "REPLACE_WITH_NEW_ZAPIKEY"
+              "value": "1001.0f7f58aefd91c265e151e3cf7d160a2e.40f504e933bfd422170de7cbf276ffa3"
             },
             {
               "name": "isdebug",
