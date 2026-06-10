@@ -57,8 +57,28 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-function travelTimeMinutes(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  return (haversineDistance(lat1, lon1, lat2, lon2) / AVERAGE_SPEED_KMH) * 60
+// Distance et durée de trajet réelles (par la route) via OSRM, avec repli
+// sur une estimation à vol d'oiseau si le service est indisponible
+async function getDistanceAndDuration(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): Promise<{ distanceKm: number; durationMinutes: number }> {
+  try {
+    const res = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`
+    )
+    const data = await res.json()
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      const route = data.routes[0]
+      return { distanceKm: route.distance / 1000, durationMinutes: route.duration / 60 }
+    }
+  } catch {
+    // OSRM indisponible
+  }
+  const distanceKm = haversineDistance(lat1, lon1, lat2, lon2)
+  return { distanceKm, durationMinutes: (distanceKm / AVERAGE_SPEED_KMH) * 60 }
 }
 
 async function geocodeAddress(address: string): Promise<{ lat: number; lon: number } | null> {
@@ -172,7 +192,7 @@ export default function RendezVousPage() {
   }, [form.adresse])
 
   // Dès que la date et l'adresse sont connues, vérifie les rendez-vous déjà
-  // programmés ce jour-là et grise les créneaux trop proches en distance
+  // programmés ce jour-là et grise les créneaux trop proches en temps de trajet
   useEffect(() => {
     if (!form.date || !addressCoords) {
       setUnavailableSlots(new Set())
@@ -180,19 +200,26 @@ export default function RendezVousPage() {
     }
     let cancelled = false
     setCheckingAvailability(true)
-    fetchExistingAppointments(form.date).then((appointments) => {
+    ;(async () => {
+      const appointments = await fetchExistingAppointments(form.date)
+      if (cancelled) return
+      const withTravel = await Promise.all(
+        appointments.map(async (appt) => {
+          const { durationMinutes } = await getDistanceAndDuration(addressCoords.lat, addressCoords.lon, appt.lat, appt.lon)
+          return { ...appt, travelMinutes: durationMinutes }
+        })
+      )
       if (cancelled) return
       const unavailable = new Set<string>()
       for (const slot of TIME_SLOTS) {
         const slotStart = timeToMinutes(slot)
         const slotEnd = slotStart + APPOINTMENT_DURATION_MINUTES
-        for (const appt of appointments) {
+        for (const appt of withTravel) {
           const apptStart = timeToMinutes(appt.heure)
           const apptEnd = apptStart + APPOINTMENT_DURATION_MINUTES
-          const travel = travelTimeMinutes(addressCoords.lat, addressCoords.lon, appt.lat, appt.lon)
           const overlap = slotStart < apptEnd && apptStart < slotEnd
-          const gapBefore = apptEnd <= slotStart && slotStart - apptEnd < travel
-          const gapAfter = slotEnd <= apptStart && apptStart - slotEnd < travel
+          const gapBefore = apptEnd <= slotStart && slotStart - apptEnd < appt.travelMinutes
+          const gapAfter = slotEnd <= apptStart && apptStart - slotEnd < appt.travelMinutes
           if (overlap || gapBefore || gapAfter) {
             unavailable.add(slot)
             break
@@ -201,7 +228,7 @@ export default function RendezVousPage() {
       }
       setUnavailableSlots(unavailable)
       setCheckingAvailability(false)
-    })
+    })()
     return () => {
       cancelled = true
     }
@@ -243,7 +270,9 @@ export default function RendezVousPage() {
     if (!coords) {
       coords = await geocodeAddress(form.adresse)
     }
-    const distanceKm = coords ? haversineDistance(COMPANY_LAT, COMPANY_LON, coords.lat, coords.lon) : 0
+    const distanceKm = coords
+      ? (await getDistanceAndDuration(COMPANY_LAT, COMPANY_LON, coords.lat, coords.lon)).distanceKm
+      : 0
 
     const honoraires = getHonorairesTarif(form.surface_m2)
     const deplacement = getDeplacementTarif(distanceKm)
