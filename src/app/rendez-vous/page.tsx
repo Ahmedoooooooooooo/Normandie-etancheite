@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00']
+const AFTERNOON_SLOTS = ['14:00', '15:00', '16:00', '17:00']
+
+function isAfternoonClosed(date: string): boolean {
+  if (!date) return false
+  const day = new Date(date + 'T12:00:00').getDay()
+  return day === 3 || day === 5 // Mercredi ou Vendredi
+}
 
 const COMPANY_LAT = 48.7480
 const COMPANY_LON = -0.5636
@@ -208,27 +215,45 @@ export default function RendezVousPage() {
                   type="date"
                   min={today}
                   value={form.date}
-                  onChange={(e) => set('date', e.target.value)}
+                  onChange={(e) => {
+                    const newDate = e.target.value
+                    setForm((prev) => ({
+                      ...prev,
+                      date: newDate,
+                      heure: isAfternoonClosed(newDate) && AFTERNOON_SLOTS.includes(prev.heure) ? '' : prev.heure,
+                    }))
+                  }}
                   className="w-full border border-slate-200 rounded-lg px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                 />
+                {isAfternoonClosed(form.date) && (
+                  <p className="text-xs text-orange-500 mt-2">
+                    Pas de rendez-vous l&apos;après-midi le mercredi et le vendredi.
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-3">Créneau horaire</label>
                 <div className="grid grid-cols-4 gap-3">
-                  {TIME_SLOTS.map((slot) => (
-                    <button
-                      key={slot}
-                      onClick={() => set('heure', slot)}
-                      className={`py-3 rounded-lg text-sm font-semibold border-2 transition-colors ${
-                        form.heure === slot
-                          ? 'bg-orange-500 border-orange-500 text-white'
-                          : 'border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
+                  {TIME_SLOTS.map((slot) => {
+                    const disabled = isAfternoonClosed(form.date) && AFTERNOON_SLOTS.includes(slot)
+                    return (
+                      <button
+                        key={slot}
+                        onClick={() => !disabled && set('heure', slot)}
+                        disabled={disabled}
+                        className={`py-3 rounded-lg text-sm font-semibold border-2 transition-colors ${
+                          disabled
+                            ? 'border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed'
+                            : form.heure === slot
+                            ? 'bg-orange-500 border-orange-500 text-white'
+                            : 'border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500'
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             </div>
