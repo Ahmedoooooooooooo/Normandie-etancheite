@@ -17,25 +17,12 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "https://flow.zoho.eu/20115276691/flow/webhook/incoming",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "zapikey",
-              "value": "1001.0f7f58aefd91c265e151e3cf7d160a2e.40f504e933bfd422170de7cbf276ffa3"
-            },
-            {
-              "name": "isdebug",
-              "value": "false"
-            },
-            {
-              "name": "date",
-              "value": "={{ $json.query.date }}"
-            }
-          ]
-        },
+        "method": "POST",
+        "url": "https://flow.zoho.eu/20115276691/flow/webhook/incoming?zapikey=1001.0f7f58aefd91c265e151e3cf7d160a2e.40f504e933bfd422170de7cbf276ffa3&isdebug=false",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ date: $json.query.date }) }}",
         "options": {}
       },
       "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
