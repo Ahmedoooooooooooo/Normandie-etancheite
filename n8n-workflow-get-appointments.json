@@ -1,0 +1,65 @@
+{
+  "name": "Normandie Etancheite - Get Appointments",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "get-appointments",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "c3d4e5f6-a7b8-9012-cdef-123456789012"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://flow.zoho.eu/20115276691/flow/webhook/incoming",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "zapikey",
+              "value": "REPLACE_WITH_NEW_ZAPIKEY"
+            },
+            {
+              "name": "isdebug",
+              "value": "false"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.query.date }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "name": "Zoho Flow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Zoho Flow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
