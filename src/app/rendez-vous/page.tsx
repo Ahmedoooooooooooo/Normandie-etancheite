@@ -96,16 +96,23 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lon: numb
   return null
 }
 
-interface ExistingAppointment {
+interface RawAppointment {
   heure: string
+  adresse?: string
 }
 
-async function fetchExistingAppointments(date: string): Promise<ExistingAppointment[]> {
+interface ExistingAppointment {
+  heure: string
+  lat?: number
+  lon?: number
+}
+
+async function fetchExistingAppointments(date: string): Promise<RawAppointment[]> {
   try {
     const res = await fetch(`${GET_APPOINTMENTS_WEBHOOK_URL}?date=${date}`)
     if (!res.ok) return []
     const data = await res.json()
-    const list: Array<{ heure: string }> = Array.isArray(data?.appointments) ? data.appointments : []
+    const list: RawAppointment[] = Array.isArray(data?.appointments) ? data.appointments : []
     return list.filter((a) => typeof a?.heure === 'string')
   } catch {
     return []
@@ -152,6 +159,7 @@ export default function RendezVousPage() {
 
   const [addressCoords, setAddressCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [geocoding, setGeocoding] = useState(false)
+  const [existingAppointments, setExistingAppointments] = useState<ExistingAppointment[]>([])
   const [unavailableSlots, setUnavailableSlots] = useState<Set<string>>(new Set())
   const [checkingAvailability, setCheckingAvailability] = useState(false)
 
@@ -185,10 +193,10 @@ export default function RendezVousPage() {
   }, [form.adresse])
 
   // Dès que la date est choisie, interroge le calendrier "Expertise toiture"
-  // et grise les créneaux qui chevauchent un rendez-vous déjà pris
+  // et géocode l'adresse de chaque rendez-vous déjà programmé ce jour-là
   useEffect(() => {
     if (!form.date) {
-      setUnavailableSlots(new Set())
+      setExistingAppointments([])
       return
     }
     let cancelled = false
@@ -196,14 +204,55 @@ export default function RendezVousPage() {
     ;(async () => {
       const appointments = await fetchExistingAppointments(form.date)
       if (cancelled) return
+      const enriched = await Promise.all(
+        appointments.map(async (a): Promise<ExistingAppointment> => {
+          if (!a.adresse) return { heure: a.heure }
+          const coords = await geocodeAddress(a.adresse)
+          return coords ? { heure: a.heure, lat: coords.lat, lon: coords.lon } : { heure: a.heure }
+        })
+      )
+      if (cancelled) return
+      setExistingAppointments(enriched)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [form.date])
+
+  // Recalcule les créneaux indisponibles : chevauchement direct avec un
+  // rendez-vous existant, ou temps de trajet insuffisant si l'adresse du
+  // client est connue
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setCheckingAvailability(true)
+      let withTravel: Array<{ heure: string; travelMinutes: number | null }> = existingAppointments.map((a) => ({
+        heure: a.heure,
+        travelMinutes: null,
+      }))
+      if (addressCoords) {
+        withTravel = await Promise.all(
+          existingAppointments.map(async (appt) => {
+            if (appt.lat === undefined || appt.lon === undefined) {
+              return { heure: appt.heure, travelMinutes: null }
+            }
+            const { durationMinutes } = await getDistanceAndDuration(addressCoords.lat, addressCoords.lon, appt.lat, appt.lon)
+            return { heure: appt.heure, travelMinutes: durationMinutes }
+          })
+        )
+      }
+      if (cancelled) return
       const unavailable = new Set<string>()
       for (const slot of TIME_SLOTS) {
         const slotStart = timeToMinutes(slot)
         const slotEnd = slotStart + APPOINTMENT_DURATION_MINUTES
-        for (const appt of appointments) {
+        for (const appt of withTravel) {
           const apptStart = timeToMinutes(appt.heure)
           const apptEnd = apptStart + APPOINTMENT_DURATION_MINUTES
-          if (slotStart < apptEnd && apptStart < slotEnd) {
+          const overlap = slotStart < apptEnd && apptStart < slotEnd
+          const gapBefore = appt.travelMinutes !== null && apptEnd <= slotStart && slotStart - apptEnd < appt.travelMinutes
+          const gapAfter = appt.travelMinutes !== null && slotEnd <= apptStart && apptStart - slotEnd < appt.travelMinutes
+          if (overlap || gapBefore || gapAfter) {
             unavailable.add(slot)
             break
           }
@@ -215,7 +264,7 @@ export default function RendezVousPage() {
     return () => {
       cancelled = true
     }
-  }, [form.date])
+  }, [existingAppointments, addressCoords])
 
   // Réinitialise le créneau choisi s'il devient indisponible
   useEffect(() => {
@@ -386,7 +435,9 @@ export default function RendezVousPage() {
                 className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
               />
               <p className="text-xs text-slate-400 mt-1">
-                {geocoding ? 'Vérification de l’adresse...' : 'Utilisée pour calculer les frais de déplacement'}
+                {geocoding
+                  ? 'Vérification de l’adresse...'
+                  : 'Utilisée pour calculer les frais de déplacement et les disponibilités'}
               </p>
             </div>
           </section>
@@ -450,7 +501,12 @@ export default function RendezVousPage() {
               )}
               {!checkingAvailability && form.date && unavailableSlots.size > 0 && (
                 <p className="text-xs text-slate-400 mt-2">
-                  Les créneaux grisés sont déjà réservés ce jour-là.
+                  Les créneaux grisés sont déjà réservés, ou trop proches d&apos;un autre rendez-vous compte tenu du temps de trajet.
+                </p>
+              )}
+              {!checkingAvailability && form.date && !addressCoords && (
+                <p className="text-xs text-slate-400 mt-2">
+                  Renseignez votre adresse ci-dessus pour affiner les disponibilités selon les temps de trajet.
                 </p>
               )}
             </div>

@@ -50,7 +50,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json;\nconst parsed = typeof body.data === 'string' ? JSON.parse(body.data) : body;\nconst events = parsed.events || [];\n\nconst appointments = [];\nfor (const ev of events) {\n  const start = ev.dateandtime && ev.dateandtime.start;\n  if (!start) continue;\n  const match = String(start).match(/T(\\d{2})(\\d{2})/);\n  if (!match) continue;\n  appointments.push({ heure: `${match[1]}:${match[2]}` });\n}\n\nreturn [{ json: { appointments } }];"
+        "jsCode": "const body = $input.first().json;\nconst parsed = typeof body.data === 'string' ? JSON.parse(body.data) : body;\nconst events = parsed.events || [];\n\nconst appointments = [];\nfor (const ev of events) {\n  const start = ev.dateandtime && ev.dateandtime.start;\n  if (!start) continue;\n  const match = String(start).match(/T(\\d{2})(\\d{2})/);\n  if (!match) continue;\n  const appt = { heure: `${match[1]}:${match[2]}` };\n  if (ev.location) appt.adresse = ev.location;\n  appointments.push(appt);\n}\n\nreturn [{ json: { appointments } }];"
       },
       "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
       "name": "Format Appointments",
