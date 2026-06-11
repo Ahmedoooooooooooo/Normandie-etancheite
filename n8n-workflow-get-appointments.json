@@ -28,7 +28,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://calendar.zoho.eu/api/v1/calendars/REMPLACER_PAR_UID_CALENDRIER/events",
+        "url": "https://calendar.zoho.eu/api/v1/calendars/ed109954ae4442f99c8f9b47862b622c/events",
         "authentication": "genericCredentialType",
         "genericAuthType": "oAuth2Api",
         "sendQuery": true,
@@ -50,7 +50,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json;\nconst events = body.events || body.Events || [];\n\nfunction toLocalHeure(value) {\n  // Format attendu : yyyyMMddTHHmmssZ (UTC)\n  const match = String(value).match(/T(\\d{2})(\\d{2})/);\n  if (!match) return null;\n  let hour = parseInt(match[1], 10);\n  const minute = match[2];\n  hour = (hour + 2) % 24; // UTC -> heure de Paris (UTC+2 en ete)\n  return `${hour.toString().padStart(2, '0')}:${minute}`;\n}\n\nconst appointments = [];\nfor (const ev of events) {\n  if (ev.fbtype && String(ev.fbtype).toLowerCase() !== 'busy') continue;\n  const start = ev.startTime || ev.starttime || (ev.dateandtime && ev.dateandtime.start);\n  const heure = start ? toLocalHeure(start) : null;\n  if (heure) appointments.push({ heure });\n}\n\nreturn [{ json: { appointments } }];"
+        "jsCode": "const body = $input.first().json;\nconst parsed = typeof body.data === 'string' ? JSON.parse(body.data) : body;\nconst events = parsed.events || [];\n\nconst appointments = [];\nfor (const ev of events) {\n  const start = ev.dateandtime && ev.dateandtime.start;\n  if (!start) continue;\n  const match = String(start).match(/T(\\d{2})(\\d{2})/);\n  if (!match) continue;\n  appointments.push({ heure: `${match[1]}:${match[2]}` });\n}\n\nreturn [{ json: { appointments } }];"
       },
       "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
       "name": "Format Appointments",
