@@ -17,19 +17,52 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://flow.zoho.eu/20115276691/flow/webhook/incoming?zapikey=1001.0f7f58aefd91c265e151e3cf7d160a2e.40f504e933bfd422170de7cbf276ffa3&isdebug=false",
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ date: $json.query.date }) }}",
+        "jsCode": "const date = $json.query.date;\nconst clean = (date || '').replace(/-/g, '');\n\nreturn [{\n  json: {\n    range: JSON.stringify({\n      start: `${clean}T000000Z`,\n      end: `${clean}T235959Z`,\n    }),\n  },\n}];"
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "Compute Date Range",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://calendar.zoho.eu/api/v1/calendars/REMPLACER_PAR_UID_CALENDRIER/events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "range",
+              "value": "={{ $json.range }}"
+            }
+          ]
+        },
         "options": {}
       },
-      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
-      "name": "Zoho Flow",
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "Zoho Calendar - Get Events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [500, 300]
+      "position": [690, 300],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "Zoho OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\nconst events = body.events || body.Events || [];\n\nfunction toLocalHeure(value) {\n  // Format attendu : yyyyMMddTHHmmssZ (UTC)\n  const match = String(value).match(/T(\\d{2})(\\d{2})/);\n  if (!match) return null;\n  let hour = parseInt(match[1], 10);\n  const minute = match[2];\n  hour = (hour + 2) % 24; // UTC -> heure de Paris (UTC+2 en ete)\n  return `${hour.toString().padStart(2, '0')}:${minute}`;\n}\n\nconst appointments = [];\nfor (const ev of events) {\n  if (ev.fbtype && String(ev.fbtype).toLowerCase() !== 'busy') continue;\n  const start = ev.startTime || ev.starttime || (ev.dateandtime && ev.dateandtime.start);\n  const heure = start ? toLocalHeure(start) : null;\n  if (heure) appointments.push({ heure });\n}\n\nreturn [{ json: { appointments } }];"
+      },
+      "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
+      "name": "Format Appointments",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
     }
   ],
   "connections": {
@@ -37,7 +70,29 @@
       "main": [
         [
           {
-            "node": "Zoho Flow",
+            "node": "Compute Date Range",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Date Range": {
+      "main": [
+        [
+          {
+            "node": "Zoho Calendar - Get Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoho Calendar - Get Events": {
+      "main": [
+        [
+          {
+            "node": "Format Appointments",
             "type": "main",
             "index": 0
           }

@@ -9,8 +9,9 @@ const AFTERNOON_SLOTS = ['14:00', '15:00', '16:00', '17:00']
 const APPOINTMENT_DURATION_MINUTES = 60
 const AVERAGE_SPEED_KMH = 50
 
-// Webhook n8n qui interroge le calendrier "Expertise toiture" via Zoho Flow
-// et renvoie les rendez-vous déjà programmés pour une date donnée.
+// Webhook n8n qui interroge en direct l'API Zoho Calendar (OAuth2) du
+// calendrier "Expertise toiture" et renvoie les rendez-vous déjà
+// programmés pour une date donnée.
 const GET_APPOINTMENTS_WEBHOOK_URL = 'https://n8n.srv1591454.hstgr.cloud/webhook/get-appointments'
 
 const COMPANY_LAT = 48.7480
@@ -97,8 +98,6 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lon: numb
 
 interface ExistingAppointment {
   heure: string
-  lat: number
-  lon: number
 }
 
 async function fetchExistingAppointments(date: string): Promise<ExistingAppointment[]> {
@@ -106,14 +105,8 @@ async function fetchExistingAppointments(date: string): Promise<ExistingAppointm
     const res = await fetch(`${GET_APPOINTMENTS_WEBHOOK_URL}?date=${date}`)
     if (!res.ok) return []
     const data = await res.json()
-    const list: Array<{ heure: string; adresse: string }> = Array.isArray(data?.appointments) ? data.appointments : []
-    const geocoded = await Promise.all(
-      list.map(async (a) => {
-        const coords = await geocodeAddress(a.adresse)
-        return coords ? { heure: a.heure, lat: coords.lat, lon: coords.lon } : null
-      })
-    )
-    return geocoded.filter((a): a is ExistingAppointment => a !== null)
+    const list: Array<{ heure: string }> = Array.isArray(data?.appointments) ? data.appointments : []
+    return list.filter((a) => typeof a?.heure === 'string')
   } catch {
     return []
   }
@@ -191,10 +184,10 @@ export default function RendezVousPage() {
     }
   }, [form.adresse])
 
-  // Dès que la date et l'adresse sont connues, vérifie les rendez-vous déjà
-  // programmés ce jour-là et grise les créneaux trop proches en temps de trajet
+  // Dès que la date est choisie, interroge le calendrier "Expertise toiture"
+  // et grise les créneaux qui chevauchent un rendez-vous déjà pris
   useEffect(() => {
-    if (!form.date || !addressCoords) {
+    if (!form.date) {
       setUnavailableSlots(new Set())
       return
     }
@@ -203,24 +196,14 @@ export default function RendezVousPage() {
     ;(async () => {
       const appointments = await fetchExistingAppointments(form.date)
       if (cancelled) return
-      const withTravel = await Promise.all(
-        appointments.map(async (appt) => {
-          const { durationMinutes } = await getDistanceAndDuration(addressCoords.lat, addressCoords.lon, appt.lat, appt.lon)
-          return { ...appt, travelMinutes: durationMinutes }
-        })
-      )
-      if (cancelled) return
       const unavailable = new Set<string>()
       for (const slot of TIME_SLOTS) {
         const slotStart = timeToMinutes(slot)
         const slotEnd = slotStart + APPOINTMENT_DURATION_MINUTES
-        for (const appt of withTravel) {
+        for (const appt of appointments) {
           const apptStart = timeToMinutes(appt.heure)
           const apptEnd = apptStart + APPOINTMENT_DURATION_MINUTES
-          const overlap = slotStart < apptEnd && apptStart < slotEnd
-          const gapBefore = apptEnd <= slotStart && slotStart - apptEnd < appt.travelMinutes
-          const gapAfter = slotEnd <= apptStart && apptStart - slotEnd < appt.travelMinutes
-          if (overlap || gapBefore || gapAfter) {
+          if (slotStart < apptEnd && apptStart < slotEnd) {
             unavailable.add(slot)
             break
           }
@@ -232,7 +215,7 @@ export default function RendezVousPage() {
     return () => {
       cancelled = true
     }
-  }, [form.date, addressCoords])
+  }, [form.date])
 
   // Réinitialise le créneau choisi s'il devient indisponible
   useEffect(() => {
@@ -403,9 +386,7 @@ export default function RendezVousPage() {
                 className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
               />
               <p className="text-xs text-slate-400 mt-1">
-                {geocoding
-                  ? 'Vérification de l’adresse...'
-                  : 'Utilisée pour calculer les frais de déplacement et les disponibilités'}
+                {geocoding ? 'Vérification de l’adresse...' : 'Utilisée pour calculer les frais de déplacement'}
               </p>
             </div>
           </section>
@@ -442,14 +423,14 @@ export default function RendezVousPage() {
               <div className="grid grid-cols-4 gap-3">
                 {TIME_SLOTS.map((slot) => {
                   const closedByDay = dayClosure === 'full' || (dayClosure === 'afternoon' && AFTERNOON_SLOTS.includes(slot))
-                  const closedByTravel = unavailableSlots.has(slot)
-                  const disabled = closedByDay || closedByTravel
+                  const alreadyBooked = unavailableSlots.has(slot)
+                  const disabled = closedByDay || alreadyBooked
                   return (
                     <button
                       key={slot}
                       onClick={() => !disabled && set('heure', slot)}
                       disabled={disabled}
-                      title={closedByTravel ? 'Temps de trajet insuffisant avec un autre rendez-vous ce jour-là' : undefined}
+                      title={alreadyBooked ? 'Ce créneau est déjà réservé' : undefined}
                       className={`py-3 rounded-lg text-sm font-semibold border-2 transition-colors ${
                         disabled
                           ? 'border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed'
@@ -465,16 +446,11 @@ export default function RendezVousPage() {
               </div>
 
               {checkingAvailability && (
-                <p className="text-xs text-slate-400 mt-2">Vérification des disponibilités selon vos autres rendez-vous...</p>
+                <p className="text-xs text-slate-400 mt-2">Vérification des disponibilités...</p>
               )}
-              {!checkingAvailability && addressCoords && unavailableSlots.size > 0 && (
+              {!checkingAvailability && form.date && unavailableSlots.size > 0 && (
                 <p className="text-xs text-slate-400 mt-2">
-                  Certains créneaux grisés sont indisponibles : temps de trajet insuffisant avec un autre rendez-vous ce jour-là.
-                </p>
-              )}
-              {!form.adresse.trim() && (
-                <p className="text-xs text-slate-400 mt-2">
-                  Renseignez votre adresse ci-dessus pour affiner les disponibilités selon les trajets.
+                  Les créneaux grisés sont déjà réservés ce jour-là.
                 </p>
               )}
             </div>
