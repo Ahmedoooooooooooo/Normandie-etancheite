@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00']
-const AFTERNOON_SLOTS = ['14:00', '15:00', '16:00', '17:00']
+const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00']
+const AFTERNOON_SLOTS = ['13:00', '14:00', '15:00', '16:00', '17:00']
 const APPOINTMENT_DURATION_MINUTES = 60
 const AVERAGE_SPEED_KMH = 50
 
