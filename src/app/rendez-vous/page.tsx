@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import DateTimePicker from './DateTimePicker'
 
 const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00']
 const AFTERNOON_SLOTS = ['13:00', '14:00', '15:00', '16:00', '17:00']
@@ -519,68 +520,19 @@ export default function RendezVousPage() {
           <section>
             <h2 className="text-lg font-bold text-[#1e3a5f] mb-4">Date et créneau du rendez-vous</h2>
 
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Date de l&apos;intervention</label>
-              <input
-                type="date"
-                min={today}
-                value={form.date}
-                onChange={(e) => set('date', e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-              />
-              {dayClosure === 'full' && (
-                <p className="text-xs text-orange-500 mt-2">
-                  Nous ne travaillons pas le vendredi. Merci de choisir un autre jour.
-                </p>
-              )}
-              {dayClosure === 'afternoon' && (
-                <p className="text-xs text-orange-500 mt-2">
-                  Pas de rendez-vous l&apos;après-midi le mercredi — seuls les créneaux du matin sont disponibles.
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-3">Créneau horaire</label>
-              <div className="grid grid-cols-4 gap-3">
-                {TIME_SLOTS.map((slot) => {
-                  const closedByDay = dayClosure === 'full' || (dayClosure === 'afternoon' && AFTERNOON_SLOTS.includes(slot))
-                  const alreadyBooked = unavailableSlots.has(slot)
-                  const disabled = closedByDay || alreadyBooked
-                  return (
-                    <button
-                      key={slot}
-                      onClick={() => !disabled && set('heure', slot)}
-                      disabled={disabled}
-                      title={alreadyBooked ? 'Ce créneau est déjà réservé' : undefined}
-                      className={`py-3 rounded-lg text-sm font-semibold border-2 transition-colors ${
-                        disabled
-                          ? 'border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed'
-                          : form.heure === slot
-                          ? 'bg-orange-500 border-orange-500 text-white'
-                          : 'border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {checkingAvailability && (
-                <p className="text-xs text-slate-400 mt-2">Vérification des disponibilités...</p>
-              )}
-              {!checkingAvailability && form.date && unavailableSlots.size > 0 && (
-                <p className="text-xs text-slate-400 mt-2">
-                  Les créneaux grisés sont déjà réservés, ou trop proches d&apos;un autre rendez-vous compte tenu du temps de trajet.
-                </p>
-              )}
-              {!checkingAvailability && form.date && !addressCoords && (
-                <p className="text-xs text-slate-400 mt-2">
-                  Renseignez votre adresse ci-dessus pour affiner les disponibilités selon les temps de trajet.
-                </p>
-              )}
-            </div>
+            <DateTimePicker
+              date={form.date}
+              heure={form.heure}
+              today={today}
+              onDateChange={(date) => setForm((prev) => ({ ...prev, date, heure: '' }))}
+              onTimeChange={(heure) => set('heure', heure)}
+              getDayClosure={getDayClosure}
+              timeSlots={TIME_SLOTS}
+              afternoonSlots={AFTERNOON_SLOTS}
+              unavailableSlots={unavailableSlots}
+              checkingAvailability={checkingAvailability}
+              hasAddress={addressCoords !== null}
+            />
           </section>
 
           <div className="border-t border-slate-100" />
