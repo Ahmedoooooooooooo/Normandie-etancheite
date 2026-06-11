@@ -46,13 +46,7 @@
       "name": "Zoho Calendar - Get Events",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [690, 300],
-      "credentials": {
-        "oAuth2Api": {
-          "id": "PLACEHOLDER_CREDENTIAL_ID",
-          "name": "Zoho OAuth2 API"
-        }
-      }
+      "position": [690, 300]
     },
     {
       "parameters": {
