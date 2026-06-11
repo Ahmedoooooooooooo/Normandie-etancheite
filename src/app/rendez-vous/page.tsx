@@ -12,6 +12,10 @@ const AVERAGE_SPEED_KMH = 50
 // L'artisan doit pouvoir rentrer à Flers au plus tard à cette heure
 const LATEST_RETURN_TIME = '19:30'
 
+// Battement minimum appliqué entre deux rendez-vous lorsque le temps de
+// trajet réel ne peut pas être calculé (adresse manquante ou non géocodée)
+const DEFAULT_TRAVEL_BUFFER_MINUTES = 30
+
 // Webhook n8n qui interroge en direct l'API Zoho Calendar (OAuth2) du
 // calendrier "Expertise toiture" et renvoie les rendez-vous déjà
 // programmés pour une date donnée.
@@ -291,9 +295,10 @@ export default function RendezVousPage() {
         for (const appt of withTravel) {
           const apptStart = timeToMinutes(appt.heure)
           const apptEnd = apptStart + APPOINTMENT_DURATION_MINUTES
+          const buffer = appt.travelMinutes ?? DEFAULT_TRAVEL_BUFFER_MINUTES
           const overlap = slotStart < apptEnd && apptStart < slotEnd
-          const gapBefore = appt.travelMinutes !== null && apptEnd <= slotStart && slotStart - apptEnd < appt.travelMinutes
-          const gapAfter = appt.travelMinutes !== null && slotEnd <= apptStart && apptStart - slotEnd < appt.travelMinutes
+          const gapBefore = apptEnd <= slotStart && slotStart - apptEnd < buffer
+          const gapAfter = slotEnd <= apptStart && apptStart - slotEnd < buffer
           if (overlap || gapBefore || gapAfter) {
             unavailable.add(slot)
             break
