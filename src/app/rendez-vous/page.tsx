@@ -9,6 +9,9 @@ const AFTERNOON_SLOTS = ['14:00', '15:00', '16:00', '17:00']
 const APPOINTMENT_DURATION_MINUTES = 60
 const AVERAGE_SPEED_KMH = 50
 
+// L'artisan doit pouvoir rentrer à Flers au plus tard à cette heure
+const LATEST_RETURN_TIME = '19:30'
+
 // Webhook n8n qui interroge en direct l'API Zoho Calendar (OAuth2) du
 // calendrier "Expertise toiture" et renvoie les rendez-vous déjà
 // programmés pour une date donnée.
@@ -230,6 +233,7 @@ export default function RendezVousPage() {
         heure: a.heure,
         travelMinutes: null,
       }))
+      let returnTravelMinutes: number | null = null
       if (addressCoords) {
         withTravel = await Promise.all(
           existingAppointments.map(async (appt) => {
@@ -240,12 +244,23 @@ export default function RendezVousPage() {
             return { heure: appt.heure, travelMinutes: durationMinutes }
           })
         )
+        const toFlers = await getDistanceAndDuration(addressCoords.lat, addressCoords.lon, COMPANY_LAT, COMPANY_LON)
+        returnTravelMinutes = toFlers.durationMinutes
       }
       if (cancelled) return
+      const latestReturnMinutes = timeToMinutes(LATEST_RETURN_TIME)
       const unavailable = new Set<string>()
       for (const slot of TIME_SLOTS) {
         const slotStart = timeToMinutes(slot)
         const slotEnd = slotStart + APPOINTMENT_DURATION_MINUTES
+
+        // L'artisan doit pouvoir rentrer à Flers avant LATEST_RETURN_TIME
+        // si ce rendez-vous est le dernier de la journée
+        if (returnTravelMinutes !== null && slotEnd + returnTravelMinutes > latestReturnMinutes) {
+          unavailable.add(slot)
+          continue
+        }
+
         for (const appt of withTravel) {
           const apptStart = timeToMinutes(appt.heure)
           const apptEnd = apptStart + APPOINTMENT_DURATION_MINUTES
