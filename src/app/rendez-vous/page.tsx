@@ -99,6 +99,29 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lon: numb
   return null
 }
 
+interface AddressSuggestion {
+  label: string
+  lat: number
+  lon: number
+}
+
+async function fetchAddressSuggestions(query: string): Promise<AddressSuggestion[]> {
+  try {
+    const res = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`)
+    const data = await res.json()
+    if (Array.isArray(data.features)) {
+      return data.features.map((f: { properties: { label: string }; geometry: { coordinates: [number, number] } }) => ({
+        label: f.properties.label,
+        lat: f.geometry.coordinates[1],
+        lon: f.geometry.coordinates[0],
+      }))
+    }
+  } catch {
+    // suggestions indisponibles
+  }
+  return []
+}
+
 interface RawAppointment {
   heure: string
   adresse?: string
@@ -162,6 +185,8 @@ export default function RendezVousPage() {
 
   const [addressCoords, setAddressCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [geocoding, setGeocoding] = useState(false)
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [existingAppointments, setExistingAppointments] = useState<ExistingAppointment[]>([])
   const [unavailableSlots, setUnavailableSlots] = useState<Set<string>>(new Set())
   const [checkingAvailability, setCheckingAvailability] = useState(false)
@@ -173,21 +198,23 @@ export default function RendezVousPage() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Géocode l'adresse saisie (avec un léger débounce) pour calculer les trajets
+  // Recherche des suggestions d'adresse (avec un léger débounce) et
+  // géocode l'adresse saisie pour calculer les trajets
   useEffect(() => {
     const address = form.adresse.trim()
     if (!address) {
       setAddressCoords(null)
+      setAddressSuggestions([])
       return
     }
     let cancelled = false
     setGeocoding(true)
     const timeout = setTimeout(async () => {
-      const coords = await geocodeAddress(address)
-      if (!cancelled) {
-        setAddressCoords(coords)
-        setGeocoding(false)
-      }
+      const suggestions = await fetchAddressSuggestions(address)
+      if (cancelled) return
+      setAddressSuggestions(suggestions)
+      setAddressCoords(suggestions.length > 0 ? { lat: suggestions[0].lat, lon: suggestions[0].lon } : null)
+      setGeocoding(false)
     }, 800)
     return () => {
       cancelled = true
@@ -440,15 +467,39 @@ export default function RendezVousPage() {
               />
             </div>
 
-            <div>
+            <div className="relative">
               <label className="block text-sm font-semibold text-slate-700 mb-2">Adresse du chantier *</label>
               <input
                 type="text"
                 value={form.adresse}
                 onChange={(e) => set('adresse', e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                 placeholder="12 rue de la Paix, 61000 Alençon"
+                autoComplete="off"
                 className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
               />
+              {showSuggestions && addressSuggestions.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+                  {addressSuggestions.map((s) => (
+                    <li key={s.label}>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          set('adresse', s.label)
+                          setAddressCoords({ lat: s.lat, lon: s.lon })
+                          setAddressSuggestions([])
+                          setShowSuggestions(false)
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 transition-colors"
+                      >
+                        {s.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <p className="text-xs text-slate-400 mt-1">
                 {geocoding
                   ? 'Vérification de l’adresse...'
