@@ -13,6 +13,11 @@ const config: Config = {
           blue: '#1e3a5f',
           orange: '#f97316',
         },
+        sage: {
+          DEFAULT: '#7BA89B',
+          50: '#eef4f2',
+          700: '#5e8b7e',
+        },
       },
     },
   },
