@@ -5,7 +5,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "zoho-sign-create",
-        "responseMode": "onReceived",
+        "responseMode": "lastNode",
         "options": {}
       },
       "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -17,32 +17,105 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://flow.zoho.eu/20115276691/flow/webhook/incoming?zapikey=1001.e5f256f936dadd3ae67e47fd6f83d777.c2ffe9be271b5108f5a75f33a89eaa87&isdebug=false",
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ ...$json.body, start_datetime: $json.body.date + 'T' + $json.body.heure + ':00+02:00', end_datetime: $json.body.date + 'T' + String(Number($json.body.heure.split(':')[0]) + 1).padStart(2, '0') + ':' + $json.body.heure.split(':')[1] + ':00+02:00' }) }}",
-        "options": {}
+        "jsCode": "// Recupere les donnees du devis envoyees par le site et prepare\n// le fichier PDF (decode depuis le base64) pour Zoho Sign.\nconst body = $json.body || $json;\nconst fileName = `devis-${body.devis_numero || 'sans-numero'}.pdf`;\n\nconst createData = JSON.stringify({\n  requests: {\n    request_name: `Devis ${body.devis_numero || ''}`.trim(),\n    actions: [\n      {\n        recipient_name: `${body.prenom || ''} ${body.nom || ''}`.trim(),\n        recipient_email: body.email,\n        action_type: 'SIGN',\n        signing_order: 0,\n        verify_recipient: false,\n      },\n    ],\n    expiration_days: 30,\n    is_sequential: false,\n    email_reminders: true,\n  },\n});\n\nreturn [{\n  json: { body, createData },\n  binary: {\n    document: {\n      data: body.pdf_base64,\n      mimeType: 'application/pdf',\n      fileName,\n    },\n  },\n}];"
       },
       "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-      "name": "Zoho Flow",
+      "name": "Prepare Document",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sign.zoho.eu/api/v1/requests",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "document"
+            },
+            {
+              "parameterType": "formData",
+              "name": "data",
+              "value": "={{ $json.createData }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "name": "Zoho Sign - Create",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [500, 300]
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lit la reponse de creation Zoho Sign et construit la requete de\n// soumission, avec un champ de signature place sur la zone prevue\n// du PDF (bas de page).\nconst resp = $json;\nconst reqObj = resp.requests || {};\nconst requestId = reqObj.request_id;\nconst documentId =\n  (reqObj.document_ids && reqObj.document_ids[0] && reqObj.document_ids[0].document_id) || '';\nconst action = (reqObj.actions && reqObj.actions[0]) || {};\n\nconst submitData = JSON.stringify({\n  requests: {\n    actions: [\n      {\n        action_id: action.action_id,\n        action_type: 'SIGN',\n        recipient_name: action.recipient_name,\n        recipient_email: action.recipient_email,\n        signing_order: 0,\n        verify_recipient: false,\n        fields: [\n          {\n            field_name: 'Signature',\n            field_type_name: 'Signature',\n            field_category: 'signature',\n            document_id: documentId,\n            page_no: 0,\n            is_mandatory: true,\n            x_coord: 210,\n            y_coord: 690,\n            abs_width: 160,\n            abs_height: 40,\n          },\n        ],\n      },\n    ],\n  },\n});\n\nreturn [{ json: { requestId, submitData } }];"
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "name": "Build Submit Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://sign.zoho.eu/api/v1/requests/{{ $json.requestId }}/submit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formData",
+              "name": "data",
+              "value": "={{ $json.submitData }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "Zoho Sign - Submit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: true } }];"
+      },
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "Respond",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1350, 300]
     }
   ],
   "connections": {
     "Webhook": {
-      "main": [
-        [
-          {
-            "node": "Zoho Flow",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Prepare Document", "type": "main", "index": 0 }]]
+    },
+    "Prepare Document": {
+      "main": [[{ "node": "Zoho Sign - Create", "type": "main", "index": 0 }]]
+    },
+    "Zoho Sign - Create": {
+      "main": [[{ "node": "Build Submit Payload", "type": "main", "index": 0 }]]
+    },
+    "Build Submit Payload": {
+      "main": [[{ "node": "Zoho Sign - Submit", "type": "main", "index": 0 }]]
+    },
+    "Zoho Sign - Submit": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
     }
   },
   "active": false,
