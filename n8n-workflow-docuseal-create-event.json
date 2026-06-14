@@ -1,0 +1,78 @@
+{
+  "name": "Normandie Etancheite - Docuseal - Create Event",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "docuseal-completed",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234560011",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "a1b2c3d4-e5f6-7890-abcd-ef1234560011"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Docuseal envoie l'evenement form.completed apres signature.\n// Les metadonnees du rendez-vous sont dans data.metadata (posees a la creation).\nconst body = $json.body || $json;\nconst data = body.data || {};\nconst meta = data.metadata || {};\n\n// Si l'evenement ne provient pas de notre flux (pas de date), on ignore.\nif (!meta.date || !meta.heure) {\n  return [];\n}\n\n// Dates de debut/fin au format Zoho Calendar (gere automatiquement\n// l'heure d'ete / hiver via le fuseau Europe/Paris).\nconst start = DateTime.fromISO(`${meta.date}T${meta.heure}`, { zone: 'Europe/Paris' });\nconst end = start.plus({ hours: 1 });\nconst zohoFmt = \"yyyyLLdd'T'HHmmssZZZ\";\n\nconst eventdata = JSON.stringify({\n  dateandtime: {\n    timezone: 'Europe/Paris',\n    start: start.toFormat(zohoFmt),\n    end: end.toFormat(zohoFmt),\n  },\n  title: `Devis - ${meta.devis_numero || ''}-${meta.prenom || ''} ${meta.nom || ''}`.trim(),\n  location: meta.adresse || '',\n  description: `Client: ${meta.prenom || ''} ${meta.nom || ''}\\nTel: ${meta.telephone || ''}\\nEmail: ${meta.email || ''}\\nSurface: ${meta.surface_m2 || ''} m2\\nType: ${meta.type_toiture || ''}\\nDevis: ${meta.devis_total_ttc || ''} EUR`,\n  isallday: false,\n});\n\nreturn [{ json: { eventdata } }];"
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345670012",
+      "name": "Parse Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://calendar.zoho.eu/api/v1/calendars/ed109954ae4442f99c8f9b47862b622c/events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "eventdata",
+              "value": "={{ $json.eventdata }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456780013",
+      "name": "Zoho Calendar - Create Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: true, eventCreated: true } }];"
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890014",
+      "name": "Respond",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Parse Metadata", "type": "main", "index": 0 }]]
+    },
+    "Parse Metadata": {
+      "main": [[{ "node": "Zoho Calendar - Create Event", "type": "main", "index": 0 }]]
+    },
+    "Zoho Calendar - Create Event": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

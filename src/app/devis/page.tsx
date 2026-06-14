@@ -28,7 +28,7 @@ export default function DevisPage() {
     try {
       const pdf_base64 = await generateDevisPdf(devis)
       const res = await fetch(
-        'https://n8n.srv1591454.hstgr.cloud/webhook/zoho-sign-create',
+        'https://n8n.srv1591454.hstgr.cloud/webhook/docuseal-create',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

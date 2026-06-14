@@ -1,0 +1,104 @@
+{
+  "name": "Normandie Etancheite - Docuseal - Create",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "docuseal-create",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234560001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "a1b2c3d4-e5f6-7890-abcd-ef1234560001"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recoit les donnees du devis + le PDF (base64) envoyes par le site.\n// Prepare le payload pour creer un template Docuseal a partir du PDF,\n// avec un champ de signature place sur la zone \"Signature du client\"\n// (coin bas-gauche du PDF genere par generateDevisPdf.ts).\nconst body = $json.body || $json;\nconst numero = body.devis_numero || 'sans-numero';\nconst name = `Devis ${numero}`.trim();\n\nconst templateData = {\n  name,\n  documents: [\n    {\n      name,\n      file: body.pdf_base64,\n      fields: [\n        {\n          name: 'Signature',\n          type: 'signature',\n          role: 'Client',\n          required: true,\n          areas: [{ x: 0.08, y: 0.83, w: 0.34, h: 0.06, page: 0 }],\n        },\n      ],\n    },\n  ],\n};\n\n// Metadonnees du rendez-vous : transportees jusqu'au webhook form.completed\n// pour creer l'evenement calendrier apres signature.\nconst metadata = {\n  date: body.date || '',\n  heure: body.heure || '',\n  prenom: body.prenom || '',\n  nom: body.nom || '',\n  telephone: body.telephone || '',\n  email: body.email || '',\n  adresse: body.adresse || '',\n  surface_m2: String(body.surface_m2 || ''),\n  type_toiture: body.type_toiture || '',\n  devis_total_ttc: String(body.devis_total_ttc || ''),\n  devis_numero: numero,\n};\n\nreturn [{ json: { templateData, metadata, body } }];"
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345670002",
+      "name": "Prepare Template",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sign.srv1591454.hstgr.cloud/api/templates/pdf",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.templateData) }}",
+        "options": {}
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456780003",
+      "name": "Docuseal - Create Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lit la reponse de creation du template (contient l'id) et construit\n// la soumission : un signataire (le client) qui recevra le lien par email.\nconst resp = $json;\nconst templateId = resp.id;\nconst prep = $('Prepare Template').first().json;\nconst body = prep.body;\nconst metadata = prep.metadata;\n\nconst submissionData = {\n  template_id: templateId,\n  send_email: true,\n  submitters: [\n    {\n      role: 'Client',\n      name: `${body.prenom || ''} ${body.nom || ''}`.trim(),\n      email: body.email,\n      metadata: metadata,\n    },\n  ],\n};\n\nreturn [{ json: { submissionData } }];"
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890004",
+      "name": "Build Submission",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sign.srv1591454.hstgr.cloud/api/submissions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.submissionData) }}",
+        "options": {}
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-345678900005",
+      "name": "Docuseal - Create Submission",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: true } }];"
+      },
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789000006",
+      "name": "Respond",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1350, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Prepare Template", "type": "main", "index": 0 }]]
+    },
+    "Prepare Template": {
+      "main": [[{ "node": "Docuseal - Create Template", "type": "main", "index": 0 }]]
+    },
+    "Docuseal - Create Template": {
+      "main": [[{ "node": "Build Submission", "type": "main", "index": 0 }]]
+    },
+    "Build Submission": {
+      "main": [[{ "node": "Docuseal - Create Submission", "type": "main", "index": 0 }]]
+    },
+    "Docuseal - Create Submission": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
