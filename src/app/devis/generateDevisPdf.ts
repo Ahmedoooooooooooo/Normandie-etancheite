@@ -236,15 +236,14 @@ export async function generateDevisPdf(devis: DevisData): Promise<string> {
 
 /**
  * Génère le PDF "modèle" à téléverser UNE SEULE FOIS dans Docuseal.
- * Il contient l'en-tête fixe + des zones vides étiquetées où l'on déposera
- * les champs Docuseal (qui seront ensuite pré-remplis par n8n à chaque devis).
- * Chaque zone porte le nom exact du champ à créer dans Docuseal.
+ * Design professionnel : zones de champs discrètes (fond gris clair, pas d'étiquettes visibles).
  */
 export async function generateDevisTemplatePdf(): Promise<string> {
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT])
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  const italic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique)
 
   function text(value: string, x: number, y: number, size: number, f: PDFFont, color = SLATE_700) {
     page.drawText(value, { x, y, size, font: f, color })
@@ -253,81 +252,94 @@ export async function generateDevisTemplatePdf(): Promise<string> {
     const width = f.widthOfTextAtSize(value, size)
     page.drawText(value, { x: xRight - width, y, size, font: f, color })
   }
-  function rect(x: number, y: number, w: number, h: number, color: ReturnType<typeof rgb>) {
-    page.drawRectangle({ x, y, width: w, height: h, color })
-  }
-
-  // Zone de champ : rectangle pointillé clair + étiquette du nom du champ Docuseal
-  function fieldZone(label: string, fieldName: string, x: number, yTop: number, w: number, h: number) {
+  function rect(x: number, y: number, w: number, h: number, color: ReturnType<typeof rgb>, border?: { color: ReturnType<typeof rgb>; width: number }) {
     page.drawRectangle({
       x,
-      y: yTop - h,
+      y,
       width: w,
       height: h,
-      borderColor: ORANGE,
-      borderWidth: 1,
-      color: ORANGE_50,
+      color,
+      ...(border && { borderColor: border.color, borderWidth: border.width }),
     })
-    text(label, x + 6, yTop - 12, 7, bold, SLATE_400)
-    text(`>> champ Docuseal : ${fieldName}`, x + 6, yTop - h + 6, 7, font, ORANGE)
+  }
+
+  // Zone de champ discrète : fond gris très léger, bordure subtile
+  function fieldZone(x: number, yTop: number, w: number, h: number) {
+    rect(x, yTop - h, w, h, SLATE_50, { color: SLATE_200, width: 0.5 })
   }
 
   // ---- En-tête (fixe) ----
-  const headerHeight = 120
+  const headerHeight = 110
   rect(0, PAGE_HEIGHT - headerHeight, PAGE_WIDTH, headerHeight, NAVY)
-  page.drawCircle({ x: MARGIN + 14, y: PAGE_HEIGHT - 38, size: 14, color: ORANGE })
-  text('N', MARGIN + 14 - bold.widthOfTextAtSize('N', 14) / 2, PAGE_HEIGHT - 43, 14, bold, WHITE)
-  text('NORMANDIE ÉTANCHÉITÉ', MARGIN + 38, PAGE_HEIGHT - 33, 16, bold, WHITE)
-  text('16 Impasse Beau Vallon, 61100 Flers', MARGIN + 38, PAGE_HEIGHT - 50, 9, font, SLATE_400)
-  textRight('DEVIS', PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 43, 24, bold, ORANGE)
 
-  // Numéro de devis (champ)
-  fieldZone('NUMÉRO', 'numero', PAGE_WIDTH - MARGIN - 170, PAGE_HEIGHT - 60, 170, 26)
+  // Logo cercle
+  page.drawCircle({ x: MARGIN + 16, y: PAGE_HEIGHT - 35, size: 16, color: ORANGE })
+  text('N', MARGIN + 16 - bold.widthOfTextAtSize('N', 16) / 2, PAGE_HEIGHT - 40, 16, bold, WHITE)
 
-  let cursorY = PAGE_HEIGHT - headerHeight - 24
+  // Titre et coordonnées
+  text('NORMANDIE ÉTANCHÉITÉ', MARGIN + 42, PAGE_HEIGHT - 28, 18, bold, WHITE)
+  text('Expertises en étanchéité et couverture', MARGIN + 42, PAGE_HEIGHT - 42, 9, font, SLATE_400)
+  text('16 Impasse Beau Vallon, 61100 Flers', MARGIN + 42, PAGE_HEIGHT - 54, 8, font, SLATE_400)
 
-  // ---- Bloc CLIENT ----
-  text('CLIENT', MARGIN, cursorY, 9, bold, NAVY)
-  cursorY -= 12
-  fieldZone('Nom, société, téléphone, email, adresse', 'client', MARGIN, cursorY, CONTENT_WIDTH, 92)
-  cursorY -= 92 + 18
+  // Devis titre et numéro
+  textRight('DEVIS', PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 32, 28, bold, ORANGE)
+  fieldZone(PAGE_WIDTH - MARGIN - 140, PAGE_HEIGHT - 62, 140, 20)
+  text('N°', PAGE_WIDTH - MARGIN - 130, PAGE_HEIGHT - 57, 9, bold, SLATE_400)
 
-  // ---- Bloc INTERVENTION ----
-  text('INTERVENTION', MARGIN, cursorY, 9, bold, NAVY)
-  cursorY -= 12
-  fieldZone('Date, créneau, surface, type de toiture, état, accès', 'intervention', MARGIN, cursorY, CONTENT_WIDTH, 80)
-  cursorY -= 80 + 18
+  let cursorY = PAGE_HEIGHT - headerHeight - 20
 
-  // ---- Bloc DESCRIPTION ----
-  text('DESCRIPTION', MARGIN, cursorY, 9, bold, NAVY)
-  cursorY -= 12
-  fieldZone('Description de la demande', 'description', MARGIN, cursorY, CONTENT_WIDTH, 56)
-  cursorY -= 56 + 18
+  // ---- Sections principales ----
+  const sectionLabelSize = 10
+  const sectionLabelColor = NAVY
+  const contentSize = 9
+  const lineHeight = 14
 
-  // ---- Bloc PRIX ----
-  text('DÉTAIL DU PRIX', MARGIN, cursorY, 9, bold, NAVY)
-  cursorY -= 12
-  fieldZone('Honoraires, déplacement, total HT, TVA, TOTAL TTC', 'prix', MARGIN, cursorY, CONTENT_WIDTH, 92)
-  cursorY -= 92 + 18
+  // Client
+  text('COORDONNÉES DU CLIENT', MARGIN, cursorY, sectionLabelSize, bold, sectionLabelColor)
+  cursorY -= 14
+  fieldZone(MARGIN, cursorY, CONTENT_WIDTH, 60)
+  cursorY -= 60 + 16
 
-  // ---- Mention légale (fixe) ----
-  const legal = 'Ce devis est valable 30 jours. La signature électronique vaut acceptation des conditions générales de vente.'
-  for (const line of wrapText(legal, font, 8, CONTENT_WIDTH)) {
-    text(line, MARGIN, cursorY, 8, font, SLATE_400)
+  // Intervention
+  text('INTERVENTION PROGRAMMÉE', MARGIN, cursorY, sectionLabelSize, bold, sectionLabelColor)
+  cursorY -= 14
+  fieldZone(MARGIN, cursorY, CONTENT_WIDTH, 50)
+  cursorY -= 50 + 16
+
+  // Descriptif
+  text('DESCRIPTIF DE LA DEMANDE', MARGIN, cursorY, sectionLabelSize, bold, sectionLabelColor)
+  cursorY -= 14
+  fieldZone(MARGIN, cursorY, CONTENT_WIDTH, 56)
+  cursorY -= 56 + 16
+
+  // Prix
+  text('DÉTAIL FINANCIER', MARGIN, cursorY, sectionLabelSize, bold, sectionLabelColor)
+  cursorY -= 14
+  fieldZone(MARGIN, cursorY, CONTENT_WIDTH, 70)
+  cursorY -= 70 + 16
+
+  // ---- Mention légale ----
+  const legal = 'Ce devis est valable 30 jours à partir de la date de remise. Tout travail entrepris sans signature constitue une acceptation implicite de ses conditions.'
+  cursorY -= 4
+  for (const line of wrapText(legal, italic, 8, CONTENT_WIDTH)) {
+    const width = italic.widthOfTextAtSize(line, 8)
+    text(line, MARGIN + (CONTENT_WIDTH - width) / 2, cursorY, 8, italic, SLATE_400)
     cursorY -= 11
   }
-  cursorY -= 10
-
-  // ---- Zone de SIGNATURE (champ) ----
-  text('SIGNATURE DU CLIENT — Bon pour accord', MARGIN, cursorY, 9, bold, SLATE_700)
   cursorY -= 12
-  fieldZone('Zone de signature', 'Signature', MARGIN, cursorY, 240, 70)
 
-  // ---- Pied de page (fixe) ----
-  rect(0, 0, PAGE_WIDTH, 24, NAVY)
-  const footer = 'NORMANDIE ÉTANCHÉITÉ — 16 Impasse Beau Vallon, 61100 Flers — normandie-etancheite.fr'
-  const footerWidth = font.widthOfTextAtSize(footer, 8)
-  text(footer, (PAGE_WIDTH - footerWidth) / 2, 9, 8, font, SLATE_400)
+  // ---- Zone signature ----
+  text('ACCEPTATION ET SIGNATURE', MARGIN, cursorY, sectionLabelSize, bold, sectionLabelColor)
+  cursorY -= 14
+  fieldZone(MARGIN, cursorY, 250, 60)
+  cursorY -= 60 + 8
+  text('En signant ci-dessus, j\'accepte les conditions du devis.', MARGIN, cursorY, 8, font, SLATE_500)
+
+  // ---- Pied de page ----
+  rect(0, 0, PAGE_WIDTH, 28, NAVY)
+  const footer = 'NORMANDIE ÉTANCHÉITÉ  •  Tel. +33 (0)2 XX XX XX XX  •  contact@normandie-etancheite.fr  •  normandie-etancheite.fr'
+  const footerWidth = font.widthOfTextAtSize(footer, 7)
+  text(footer, (PAGE_WIDTH - footerWidth) / 2, 11, 7, font, SLATE_400)
 
   return pdfDoc.saveAsBase64()
 }
