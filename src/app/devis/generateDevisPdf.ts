@@ -32,6 +32,7 @@ const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2
 const NAVY = rgb(0.1176, 0.2275, 0.3725)
 const SAGE = rgb(0.4824, 0.6588, 0.6078) // #7BA89B
 const SAGE_50 = rgb(0.938, 0.959, 0.953) // teinte claire assortie
+const SAGE_700 = rgb(0.369, 0.545, 0.494) // nuance foncée lisible pour le texte
 const BLUE_50 = rgb(0.937, 0.965, 1)
 const BLUE_100 = rgb(0.851, 0.918, 0.996)
 const SLATE_50 = rgb(0.973, 0.980, 0.988)
@@ -305,19 +306,19 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
   // ============ BANDEAU N° / DATE / VALIDITÉ ============
   const metaTop = H - headerH
   const metaH = 36
-  rect(0, metaTop - metaH, PAGE_WIDTH, metaH, SLATE_100)
+  rect(0, metaTop - metaH, PAGE_WIDTH, metaH, SAGE_50)
   const metaLabelY = metaTop - 14
   const metaValueY = metaTop - 29
-  text('N° DEVIS', MARGIN, metaLabelY, 8, bold, SLATE_400)
-  text('DATE', MARGIN + 150, metaLabelY, 8, bold, SLATE_400)
-  text('VALIDITÉ', MARGIN + 300, metaLabelY, 8, bold, SLATE_400)
+  text('N° DEVIS', MARGIN, metaLabelY, 8, bold, SAGE_700)
+  text('DATE', MARGIN + 150, metaLabelY, 8, bold, SAGE_700)
+  text('VALIDITÉ', MARGIN + 300, metaLabelY, 8, bold, SAGE_700)
   text('30 jours', MARGIN + 300, metaValueY, 10, font, SLATE_700)
   // [CHAMP numero] -> (MARGIN, metaValueY)   [CHAMP date] -> (MARGIN+150, metaValueY)
 
   // ==================== DE / POUR ====================
   let y = metaTop - metaH - 22
-  text('DE', MARGIN, y, 8, bold, SLATE_400)
-  textRight('POUR', RIGHT, y, 8, bold, SLATE_400)
+  text('DE', MARGIN, y, 8, bold, SAGE_700)
+  textRight('POUR', RIGHT, y, 8, bold, SAGE_700)
   y -= 15
   text('Normandie Étanchéité S.A.S', MARGIN, y, 10, bold, NAVY)
   text('16 Impasse Beau Vallon', MARGIN, y - 13, 9, font, SLATE_500)
@@ -326,18 +327,18 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
 
   // ==================== CHANTIER ====================
   const chTop = y - 25 - 20
-  rect(MARGIN, chTop - 22, CONTENT_WIDTH, 22, SLATE_100)
-  text('CHANTIER', MARGIN + 10, chTop - 14, 8, bold, SLATE_400)
+  rect(MARGIN, chTop - 22, CONTENT_WIDTH, 22, SAGE_50)
+  text('CHANTIER', MARGIN + 10, chTop - 14, 8, bold, SAGE_700)
   // [CHAMP chantier] -> (MARGIN+78, chTop-14), largeur ~ jusqu'à RIGHT
 
   // ==================== TABLEAU ====================
   const thY = chTop - 22 - 24
-  text('N°', MARGIN, thY, 8, bold, SLATE_400)
-  text('DÉSIGNATION DES OUVRAGES', colDesX, thY, 8, bold, SLATE_400)
-  textRight('UNITÉ', colUniteR, thY, 8, bold, SLATE_400)
-  textRight('QTÉ', colQteR, thY, 8, bold, SLATE_400)
-  textRight('TOTAL HT', colHtR, thY, 8, bold, SLATE_400)
-  hline(thY - 7, MARGIN, RIGHT, SLATE_400, 0.75)
+  text('N°', MARGIN, thY, 8, bold, SAGE_700)
+  text('DÉSIGNATION DES OUVRAGES', colDesX, thY, 8, bold, SAGE_700)
+  textRight('UNITÉ', colUniteR, thY, 8, bold, SAGE_700)
+  textRight('QTÉ', colQteR, thY, 8, bold, SAGE_700)
+  textRight('TOTAL HT', colHtR, thY, 8, bold, SAGE_700)
+  hline(thY - 7, MARGIN, RIGHT, SAGE, 0.75)
 
   const rowY = thY - 24
   text('01', MARGIN, rowY, 9, font, SLATE_400)
@@ -389,7 +390,7 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
   const footer = 'normandie-etancheite.com'
   hline(34, MARGIN, RIGHT, SLATE_200, 0.5)
   const fw = font.widthOfTextAtSize(footer, 8)
-  text(footer, (PAGE_WIDTH - fw) / 2, 20, 8, font, SLATE_400)
+  text(footer, (PAGE_WIDTH - fw) / 2, 20, 8, font, SAGE_700)
 
   return pdfDoc.saveAsBase64()
 }
