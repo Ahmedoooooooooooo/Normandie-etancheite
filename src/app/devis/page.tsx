@@ -3,30 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-
-interface DevisData {
-  date: string
-  date_formatee: string
-  heure: string
-  prenom: string
-  nom: string
-  telephone: string
-  email: string
-  societe: string
-  adresse: string
-  surface_m2: number
-  type_toiture: string
-  etat_general: string
-  accessibilite: string
-  description: string
-  devis_numero: string
-  devis_honoraires: number
-  devis_deplacement: number
-  devis_distance_km: number
-  devis_total_ht: number
-  devis_total_ttc: number
-  devis_signe: boolean
-}
+import { DevisData, generateDevisPdf } from './generateDevisPdf'
 
 type View = 'quote' | 'requesting' | 'success' | 'error'
 
@@ -46,14 +23,16 @@ export default function DevisPage() {
   }, [router])
 
   const handleRequestSign = async () => {
+    if (!devis) return
     setView('requesting')
     try {
+      const pdf_base64 = await generateDevisPdf(devis)
       const res = await fetch(
         'https://n8n.srv1591454.hstgr.cloud/webhook/zoho-sign-create',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(devis),
+          body: JSON.stringify({ ...devis, pdf_base64 }),
         }
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
