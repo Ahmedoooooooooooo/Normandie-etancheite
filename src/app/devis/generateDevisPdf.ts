@@ -30,8 +30,8 @@ const MARGIN = 40
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2
 
 const NAVY = rgb(0.1176, 0.2275, 0.3725)
-const ORANGE = rgb(0.9765, 0.4510, 0.0863)
-const ORANGE_50 = rgb(1, 0.969, 0.929)
+const SAGE = rgb(0.4824, 0.6588, 0.6078) // #7BA89B
+const SAGE_50 = rgb(0.938, 0.959, 0.953) // teinte claire assortie
 const BLUE_50 = rgb(0.937, 0.965, 1)
 const BLUE_100 = rgb(0.851, 0.918, 0.996)
 const SLATE_50 = rgb(0.973, 0.980, 0.988)
@@ -87,14 +87,14 @@ export async function generateDevisPdf(devis: DevisData): Promise<string> {
   const headerHeight = 130
   rect(0, PAGE_HEIGHT - headerHeight, PAGE_WIDTH, headerHeight, NAVY)
 
-  page.drawCircle({ x: MARGIN + 14, y: PAGE_HEIGHT - 40, size: 14, color: ORANGE })
+  page.drawCircle({ x: MARGIN + 14, y: PAGE_HEIGHT - 40, size: 14, color: SAGE })
   text('N', MARGIN + 14 - bold.widthOfTextAtSize('N', 14) / 2, PAGE_HEIGHT - 45, 14, bold, WHITE)
 
   text('NORMANDIE ÉTANCHÉITÉ', MARGIN + 38, PAGE_HEIGHT - 35, 16, bold, WHITE)
   text('16 Impasse Beau Vallon, 61100 Flers', MARGIN + 38, PAGE_HEIGHT - 52, 9, font, SLATE_400)
   text('SIRET : XXX XXX XXX XXXXX  |  Assurance : N° XXXXXXXXXXXX', MARGIN + 38, PAGE_HEIGHT - 65, 9, font, SLATE_400)
 
-  textRight('DEVIS', PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 45, 24, bold, ORANGE)
+  textRight('DEVIS', PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 45, 24, bold, SAGE)
   textRight(`N° ${devis.devis_numero}`, PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 65, 11, bold, WHITE)
   textRight('Valable 30 jours', PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 78, 8, font, SLATE_400)
 
@@ -174,7 +174,7 @@ export async function generateDevisPdf(devis: DevisData): Promise<string> {
     { label: `Frais de déplacement (${devis.devis_distance_km} km)`, value: `${devis.devis_deplacement.toFixed(2)} €` },
     { label: 'Total HT', value: `${devis.devis_total_ht.toFixed(2)} €`, bg: SLATE_50, f: bold, color: NAVY },
     { label: 'TVA 20 %', value: `${tva.toFixed(2)} €`, color: SLATE_500, size: 9 },
-    { label: 'Total TTC', value: `${devis.devis_total_ttc.toFixed(2)} €`, bg: ORANGE_50, f: bold, color: ORANGE, size: 13 },
+    { label: 'Total TTC', value: `${devis.devis_total_ttc.toFixed(2)} €`, bg: SAGE_50, f: bold, color: SAGE, size: 13 },
   ]
 
   const tableHeight = rowHeight + rows.length * rowHeight
@@ -277,7 +277,7 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
   // ======================= EN-TÊTE =======================
   const headerH = 138
   rect(0, H - headerH, PAGE_WIDTH, headerH, NAVY)
-  rect(0, H - headerH, PAGE_WIDTH, 3, ORANGE) // liseré de marque
+  rect(0, H - headerH, PAGE_WIDTH, 3, SAGE) // liseré de marque
 
   // Logo (version blanche) centré dans le bandeau
   if (logoPng) {
@@ -365,7 +365,7 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
   const barW = RIGHT - barX
   const labelCellW = barW * 0.6
   rect(barX, barTop - barH, labelCellW, barH, NAVY)
-  rect(barX + labelCellW, barTop - barH, barW - labelCellW, barH, ORANGE_50)
+  rect(barX + labelCellW, barTop - barH, barW - labelCellW, barH, SAGE_50)
   text('TOTAL DEVIS TTC', barX + 12, barTop - barH + 11, 10, bold, WHITE)
   // [CHAMP total_ttc] -> cellule claire, aligné à droite ~ RIGHT-10, base barTop-barH+10
 
