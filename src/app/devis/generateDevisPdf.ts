@@ -236,9 +236,13 @@ export async function generateDevisPdf(devis: DevisData): Promise<string> {
 
 /**
  * Génère le PDF "modèle" à téléverser UNE SEULE FOIS dans Docuseal.
- * Mise en page soignée aux couleurs de la marque (bleu nuit + orange).
- * Les cartes claires servent de zones où Docuseal insère les champs
- * (numero, client, intervention, description, prix, Signature).
+ * Mise en page d'un vrai devis professionnel (en-tête société + mentions
+ * légales, bandeau N°/Date/Validité, DE/POUR, chantier, tableau des
+ * ouvrages, totaux avec bandeau TTC, signatures).
+ *
+ * Zones où Docuseal insère les champs (à placer dans l'éditeur) :
+ *   numero, date, client, chantier, designation, montant_ht,
+ *   total_ht, tva, total_ttc, Signature
  */
 export async function generateDevisTemplatePdf(): Promise<string> {
   const pdfDoc = await PDFDocument.create()
@@ -246,6 +250,9 @@ export async function generateDevisTemplatePdf(): Promise<string> {
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const italic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique)
+
+  const H = PAGE_HEIGHT
+  const RIGHT = PAGE_WIDTH - MARGIN
 
   function text(value: string, x: number, y: number, size: number, f: PDFFont, color = SLATE_700) {
     page.drawText(value, { x, y, size, font: f, color })
@@ -257,139 +264,124 @@ export async function generateDevisTemplatePdf(): Promise<string> {
   function rect(x: number, y: number, w: number, h: number, color: ReturnType<typeof rgb>) {
     page.drawRectangle({ x, y, width: w, height: h, color })
   }
-
-  // Rectangle aux coins arrondis. (xLeft, yTop) = coin supérieur gauche en
-  // coordonnées PDF ; le tracé SVG se développe vers le bas.
-  function roundedRect(
-    xLeft: number,
-    yTop: number,
-    w: number,
-    h: number,
-    r: number,
-    opts: { color?: ReturnType<typeof rgb>; borderColor?: ReturnType<typeof rgb>; borderWidth?: number },
-  ) {
-    const path =
-      `M ${r} 0 L ${w - r} 0 Q ${w} 0 ${w} ${r} L ${w} ${h - r} ` +
-      `Q ${w} ${h} ${w - r} ${h} L ${r} ${h} Q 0 ${h} 0 ${h - r} L 0 ${r} Q 0 0 ${r} 0 Z`
-    page.drawSvgPath(path, {
-      x: xLeft,
-      y: yTop,
-      color: opts.color,
-      borderColor: opts.borderColor,
-      borderWidth: opts.borderWidth,
-    })
+  function hline(y: number, x1: number, x2: number, color: ReturnType<typeof rgb>, thickness = 0.5) {
+    page.drawLine({ start: { x: x1, y }, end: { x: x2, y }, thickness, color })
   }
 
-  // Carte claire = zone de champ Docuseal.
-  function card(xLeft: number, yTop: number, w: number, h: number, fill = WHITE, borderColor = SLATE_200) {
-    roundedRect(xLeft, yTop, w, h, 7, { color: fill, borderColor, borderWidth: 1 })
-  }
+  // Colonnes du tableau
+  const colDesX = MARGIN + 30
+  const colUniteR = MARGIN + 350
+  const colQteR = MARGIN + 430
+  const colHtR = RIGHT
 
-  // Intitulé de section avec petit repère orange.
-  function sectionTitle(label: string, x: number, baseline: number) {
-    roundedRect(x, baseline + 9, 3.5, 12, 1.5, { color: ORANGE })
-    text(label, x + 11, baseline, 10, bold, NAVY)
-  }
+  // ======================= EN-TÊTE =======================
+  const headerH = 138
+  rect(0, H - headerH, PAGE_WIDTH, headerH, NAVY)
+  rect(0, H - headerH, PAGE_WIDTH, 3, ORANGE) // liseré de marque
 
-  // ---- En-tête ----
-  const headerHeight = 124
-  rect(0, PAGE_HEIGHT - headerHeight, PAGE_WIDTH, headerHeight, NAVY)
-  // Fin liseré orange de l'en-tête
-  rect(0, PAGE_HEIGHT - headerHeight, PAGE_WIDTH, 4, ORANGE)
+  // Société (gauche)
+  text('Normandie Étanchéité S.A.S', MARGIN, H - 34, 13, bold, WHITE)
+  text('16 Impasse Beau Vallon', MARGIN, H - 50, 9, font, SLATE_200)
+  text('61 100 FLERS', MARGIN, H - 62, 9, font, SLATE_200)
+  text('Tél. : 06.51.17.45.64', MARGIN, H - 78, 9, font, SLATE_400)
+  text('contact@normandie-etancheite.com', MARGIN, H - 90, 9, font, SLATE_400)
 
-  // Médaillon logo
-  const logoCx = MARGIN + 20
-  const logoCy = PAGE_HEIGHT - 48
-  page.drawCircle({ x: logoCx, y: logoCy, size: 19, color: ORANGE, borderColor: WHITE, borderWidth: 1.5 })
-  text('N', logoCx - bold.widthOfTextAtSize('N', 20) / 2, logoCy - 7, 20, bold, WHITE)
+  // Document + mentions légales (droite)
+  textRight('DOCUMENT', RIGHT, H - 33, 8, font, SLATE_400)
+  textRight('Devis', RIGHT, H - 56, 23, font, WHITE)
+  textRight('SIRET : 919 098 210 000 17', RIGHT, H - 78, 8, font, SLATE_400)
+  textRight('CODE APE : 4391 B', RIGHT, H - 89, 8, font, SLATE_400)
+  textRight('RCS 919 098 210 ALENÇON', RIGHT, H - 100, 8, font, SLATE_400)
+  textRight('TVA : FR93919098210', RIGHT, H - 111, 8, font, SLATE_400)
 
-  // Identité
-  text('NORMANDIE ÉTANCHÉITÉ', MARGIN + 50, PAGE_HEIGHT - 38, 17, bold, WHITE)
-  text('Expertise en étanchéité & couverture', MARGIN + 50, PAGE_HEIGHT - 54, 9, font, SLATE_400)
-  text('16 Impasse Beau Vallon, 61100 Flers', MARGIN + 50, PAGE_HEIGHT - 68, 8, font, SLATE_400)
+  // ============ BANDEAU N° / DATE / VALIDITÉ ============
+  const metaTop = H - headerH
+  const metaH = 36
+  rect(0, metaTop - metaH, PAGE_WIDTH, metaH, SLATE_100)
+  const metaLabelY = metaTop - 14
+  const metaValueY = metaTop - 29
+  text('N° DEVIS', MARGIN, metaLabelY, 8, bold, SLATE_400)
+  text('DATE', MARGIN + 150, metaLabelY, 8, bold, SLATE_400)
+  text('VALIDITÉ', MARGIN + 300, metaLabelY, 8, bold, SLATE_400)
+  text('30 jours', MARGIN + 300, metaValueY, 10, font, SLATE_700)
+  // [CHAMP numero] -> (MARGIN, metaValueY)   [CHAMP date] -> (MARGIN+150, metaValueY)
 
-  // Bloc DEVIS + numéro (à droite)
-  textRight('DEVIS', PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 42, 27, bold, ORANGE)
-  const pillW = 158
-  const pillX = PAGE_WIDTH - MARGIN - pillW
-  card(pillX, PAGE_HEIGHT - 56, pillW, 24, WHITE, WHITE)
-  text('N°', pillX + 12, PAGE_HEIGHT - 72, 11, bold, NAVY)
+  // ==================== DE / POUR ====================
+  let y = metaTop - metaH - 22
+  text('DE', MARGIN, y, 8, bold, SLATE_400)
+  textRight('POUR', RIGHT, y, 8, bold, SLATE_400)
+  y -= 15
+  text('Normandie Étanchéité S.A.S', MARGIN, y, 10, bold, NAVY)
+  text('16 Impasse Beau Vallon', MARGIN, y - 13, 9, font, SLATE_500)
+  text('61 100 FLERS', MARGIN, y - 25, 9, font, SLATE_500)
+  // [CHAMP client] -> zone droite, ~ x=MARGIN+295..RIGHT, haut=y+2, hauteur ~46
 
-  // ---- Corps ----
-  const colGap = 18
-  const colW = (CONTENT_WIDTH - colGap) / 2
-  const rightX = MARGIN + colW + colGap
-  const titleGap = 12
+  // ==================== CHANTIER ====================
+  const chTop = y - 25 - 20
+  rect(MARGIN, chTop - 22, CONTENT_WIDTH, 22, SLATE_100)
+  text('CHANTIER', MARGIN + 10, chTop - 14, 8, bold, SLATE_400)
+  // [CHAMP chantier] -> (MARGIN+78, chTop-14), largeur ~ jusqu'à RIGHT
 
-  let cursorY = PAGE_HEIGHT - headerHeight - 34
+  // ==================== TABLEAU ====================
+  const thY = chTop - 22 - 24
+  text('N°', MARGIN, thY, 8, bold, SLATE_400)
+  text('DÉSIGNATION DES OUVRAGES', colDesX, thY, 8, bold, SLATE_400)
+  textRight('UNITÉ', colUniteR, thY, 8, bold, SLATE_400)
+  textRight('QTÉ', colQteR, thY, 8, bold, SLATE_400)
+  textRight('TOTAL HT', colHtR, thY, 8, bold, SLATE_400)
+  hline(thY - 7, MARGIN, RIGHT, SLATE_400, 0.75)
 
-  // Ligne 1 : Client | Intervention
-  sectionTitle('COORDONNÉES DU CLIENT', MARGIN, cursorY)
-  sectionTitle('INTERVENTION PROGRAMMÉE', rightX, cursorY)
-  let cardTop = cursorY - titleGap
-  const infoH = 112
-  card(MARGIN, cardTop, colW, infoH)
-  card(rightX, cardTop, colW, infoH)
-  cursorY = cardTop - infoH - 28
+  const rowY = thY - 24
+  text('01', MARGIN, rowY, 9, font, SLATE_400)
+  textRight('forfait', colUniteR, rowY, 9, font, SLATE_700)
+  textRight('1', colQteR, rowY, 9, font, SLATE_700)
+  // [CHAMP designation] -> (colDesX, rowY+4) zone ~ largeur jusqu'à MARGIN+300, multi-lignes
+  // [CHAMP montant_ht] -> aligné à droite sur colHtR, base rowY
+  hline(rowY - 16, MARGIN, RIGHT, SLATE_200, 0.5)
 
-  // Descriptif
-  sectionTitle('DESCRIPTIF DE LA DEMANDE', MARGIN, cursorY)
-  cardTop = cursorY - titleGap
-  const descH = 78
-  card(MARGIN, cardTop, CONTENT_WIDTH, descH)
-  cursorY = cardTop - descH - 28
+  // ==================== TOTAUX ====================
+  const sumLabelX = MARGIN + 300
+  let sy = rowY - 16 - 20
+  text('Total HT', sumLabelX, sy, 9, font, SLATE_500)
+  // [CHAMP total_ht] -> droite colHtR, base sy
+  hline(sy - 7, sumLabelX, RIGHT, SLATE_200, 0.5)
+  sy -= 18
+  text('TVA (20%)', sumLabelX, sy, 9, font, SLATE_500)
+  // [CHAMP tva] -> droite colHtR, base sy
 
-  // Détail financier (carte mise en valeur)
-  sectionTitle('DÉTAIL FINANCIER', MARGIN, cursorY)
-  cardTop = cursorY - titleGap
-  const prixH = 108
-  card(MARGIN, cardTop, CONTENT_WIDTH, prixH, ORANGE_50, ORANGE)
-  cursorY = cardTop - prixH - 26
+  // Bandeau TOTAL DEVIS TTC : cellule navy (libellé) + cellule claire (valeur)
+  sy -= 30
+  const barTop = sy + 10
+  const barH = 30
+  const barX = sumLabelX - 12
+  const barW = RIGHT - barX
+  const labelCellW = barW * 0.6
+  rect(barX, barTop - barH, labelCellW, barH, NAVY)
+  rect(barX + labelCellW, barTop - barH, barW - labelCellW, barH, ORANGE_50)
+  text('TOTAL DEVIS TTC', barX + 12, barTop - barH + 11, 10, bold, WHITE)
+  // [CHAMP total_ttc] -> cellule claire, aligné à droite ~ RIGHT-10, base barTop-barH+10
 
-  // Mention légale
-  const legal =
-    'Devis valable 30 jours à compter de sa date de remise. La signature électronique apposée ci-dessous vaut acceptation pleine et entière des conditions du présent devis.'
-  for (const line of wrapText(legal, italic, 8, CONTENT_WIDTH - 20)) {
-    const width = italic.widthOfTextAtSize(line, 8)
-    text(line, MARGIN + (CONTENT_WIDTH - width) / 2, cursorY, 8, italic, SLATE_400)
-    cursorY -= 11
-  }
-  cursorY -= 16
+  // ==================== MENTION LÉGALE ====================
+  let ly = barTop - barH - 26
+  text("Devis valable 30 jours a compter de la date d'emission.", MARGIN, ly, 8, italic, SLATE_400)
 
-  // Acceptation & signature
-  sectionTitle('ACCEPTATION & SIGNATURE', MARGIN, cursorY)
-  cardTop = cursorY - titleGap
-  const signH = 104
-  card(MARGIN, cardTop, CONTENT_WIDTH, signH)
+  // ==================== SIGNATURES ====================
+  ly -= 22
+  hline(ly + 6, MARGIN, RIGHT, SLATE_200, 0.5)
+  ly -= 6
+  const halfX = MARGIN + CONTENT_WIDTH / 2 + 12
+  text('Bon pour accord — Signature du client', MARGIN, ly, 9, bold, SLATE_700)
+  text("L'Entreprise — Normandie Étanchéité S.A.S", halfX, ly, 9, font, SLATE_500)
+  // [CHAMP Signature] -> colonne gauche, zone (MARGIN, ly-12) -> (MARGIN+230, ly-58)
+  const sigLineY = ly - 58
+  hline(sigLineY, MARGIN, MARGIN + 220, SLATE_400, 0.75)
+  hline(sigLineY, halfX, RIGHT, SLATE_400, 0.75)
 
-  // Colonne gauche : mention "Bon pour accord"
-  let sy = cardTop - 24
-  text('Bon pour accord', MARGIN + 18, sy, 11, bold, NAVY)
-  sy -= 16
-  text('Lu et approuvé par le client', MARGIN + 18, sy, 8, italic, SLATE_500)
-  sy -= 26
-  text('Fait à Flers, le', MARGIN + 18, sy, 9, font, SLATE_500)
-  page.drawLine({
-    start: { x: MARGIN + 88, y: sy - 2 },
-    end: { x: MARGIN + colW - 6, y: sy - 2 },
-    thickness: 0.75,
-    color: SLATE_200,
-  })
-
-  // Colonne droite : cadre de signature
-  const sigBoxX = rightX
-  const sigBoxW = colW
-  roundedRect(sigBoxX, cardTop - 14, sigBoxW, signH - 28, 5, { color: SLATE_50, borderColor: SLATE_200, borderWidth: 0.75 })
-  text('Signature du client', sigBoxX + 10, cardTop - 26, 8, bold, SLATE_400)
-
-  // ---- Pied de page ----
-  const footerH = 30
-  rect(0, 0, PAGE_WIDTH, footerH, NAVY)
-  rect(0, footerH, PAGE_WIDTH, 2, ORANGE)
-  const footer =
-    'NORMANDIE ÉTANCHÉITÉ   •   16 Impasse Beau Vallon, 61100 Flers   •   contact@normandie-etancheite.com   •   normandie-etancheite.com'
-  const footerWidth = font.widthOfTextAtSize(footer, 7)
-  text(footer, (PAGE_WIDTH - footerWidth) / 2, 11, 7, font, SLATE_400)
+  // ==================== PIED DE PAGE ====================
+  const footer = 'normandie-etancheite.com'
+  hline(34, MARGIN, RIGHT, SLATE_200, 0.5)
+  const fw = font.widthOfTextAtSize(footer, 8)
+  text(footer, (PAGE_WIDTH - fw) / 2, 20, 8, font, SLATE_400)
 
   return pdfDoc.saveAsBase64()
 }
