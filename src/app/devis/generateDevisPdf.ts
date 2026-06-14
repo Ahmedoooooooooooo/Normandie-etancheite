@@ -244,7 +244,7 @@ export async function generateDevisPdf(devis: DevisData): Promise<string> {
  *   numero, date, client, chantier, designation, montant_ht,
  *   total_ht, tva, total_ttc, Signature
  */
-export async function generateDevisTemplatePdf(): Promise<string> {
+export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<string> {
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT])
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
@@ -278,6 +278,14 @@ export async function generateDevisTemplatePdf(): Promise<string> {
   const headerH = 138
   rect(0, H - headerH, PAGE_WIDTH, headerH, NAVY)
   rect(0, H - headerH, PAGE_WIDTH, 3, ORANGE) // liseré de marque
+
+  // Logo (version blanche) centré dans le bandeau
+  if (logoPng) {
+    const img = await pdfDoc.embedPng(logoPng)
+    const lw = 132
+    const lh = (lw * img.height) / img.width
+    page.drawImage(img, { x: (PAGE_WIDTH - lw) / 2, y: H - 70 - lh / 2, width: lw, height: lh })
+  }
 
   // Société (gauche)
   text('Normandie Étanchéité S.A.S', MARGIN, H - 34, 13, bold, WHITE)
