@@ -374,17 +374,30 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
   let ly = barTop - barH - 26
   text("Devis valable 30 jours a compter de la date d'emission.", MARGIN, ly, 8, italic, SLATE_400)
 
-  // ==================== SIGNATURES ====================
+  // ==================== SIGNATURE (centrée) ====================
   ly -= 22
   hline(ly + 6, MARGIN, RIGHT, SLATE_200, 0.5)
-  ly -= 6
-  const halfX = MARGIN + CONTENT_WIDTH / 2 + 12
-  text('Bon pour accord — Signature du client', MARGIN, ly, 9, bold, SLATE_700)
-  text("L'Entreprise — Normandie Étanchéité S.A.S", halfX, ly, 9, font, SLATE_500)
-  // [CHAMP Signature] -> colonne gauche, zone (MARGIN, ly-12) -> (MARGIN+230, ly-58)
-  const sigLineY = ly - 58
-  hline(sigLineY, MARGIN, MARGIN + 220, SLATE_400, 0.75)
-  hline(sigLineY, halfX, RIGHT, SLATE_400, 0.75)
+  ly -= 10
+  // Titre centré
+  const sigTitle = 'Bon pour accord — Signature du client'
+  const stW = bold.widthOfTextAtSize(sigTitle, 10)
+  text(sigTitle, (PAGE_WIDTH - stW) / 2, ly, 10, bold, NAVY)
+  // Case de signature centrée
+  const sbW = 260
+  const sbH = 80
+  const sbX = (PAGE_WIDTH - sbW) / 2
+  const sbTop = ly - 12
+  page.drawRectangle({
+    x: sbX,
+    y: sbTop - sbH,
+    width: sbW,
+    height: sbH,
+    color: SLATE_50,
+    borderColor: SAGE,
+    borderWidth: 1,
+  })
+  text('Signature', sbX + 10, sbTop - 14, 8, bold, SAGE_700)
+  // [CHAMP Signature] -> case centrée : (sbX, sbTop) -> (sbX+sbW, sbTop-sbH)
 
   // ==================== PIED DE PAGE ====================
   const footer = 'normandie-etancheite.com'
