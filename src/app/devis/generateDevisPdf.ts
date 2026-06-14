@@ -233,3 +233,101 @@ export async function generateDevisPdf(devis: DevisData): Promise<string> {
 
   return pdfDoc.saveAsBase64()
 }
+
+/**
+ * Génère le PDF "modèle" à téléverser UNE SEULE FOIS dans Docuseal.
+ * Il contient l'en-tête fixe + des zones vides étiquetées où l'on déposera
+ * les champs Docuseal (qui seront ensuite pré-remplis par n8n à chaque devis).
+ * Chaque zone porte le nom exact du champ à créer dans Docuseal.
+ */
+export async function generateDevisTemplatePdf(): Promise<string> {
+  const pdfDoc = await PDFDocument.create()
+  const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT])
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+
+  function text(value: string, x: number, y: number, size: number, f: PDFFont, color = SLATE_700) {
+    page.drawText(value, { x, y, size, font: f, color })
+  }
+  function textRight(value: string, xRight: number, y: number, size: number, f: PDFFont, color = SLATE_700) {
+    const width = f.widthOfTextAtSize(value, size)
+    page.drawText(value, { x: xRight - width, y, size, font: f, color })
+  }
+  function rect(x: number, y: number, w: number, h: number, color: ReturnType<typeof rgb>) {
+    page.drawRectangle({ x, y, width: w, height: h, color })
+  }
+
+  // Zone de champ : rectangle pointillé clair + étiquette du nom du champ Docuseal
+  function fieldZone(label: string, fieldName: string, x: number, yTop: number, w: number, h: number) {
+    page.drawRectangle({
+      x,
+      y: yTop - h,
+      width: w,
+      height: h,
+      borderColor: ORANGE,
+      borderWidth: 1,
+      color: ORANGE_50,
+    })
+    text(label, x + 6, yTop - 12, 7, bold, SLATE_400)
+    text(`>> champ Docuseal : ${fieldName}`, x + 6, yTop - h + 6, 7, font, ORANGE)
+  }
+
+  // ---- En-tête (fixe) ----
+  const headerHeight = 120
+  rect(0, PAGE_HEIGHT - headerHeight, PAGE_WIDTH, headerHeight, NAVY)
+  page.drawCircle({ x: MARGIN + 14, y: PAGE_HEIGHT - 38, size: 14, color: ORANGE })
+  text('N', MARGIN + 14 - bold.widthOfTextAtSize('N', 14) / 2, PAGE_HEIGHT - 43, 14, bold, WHITE)
+  text('NORMANDIE ÉTANCHÉITÉ', MARGIN + 38, PAGE_HEIGHT - 33, 16, bold, WHITE)
+  text('16 Impasse Beau Vallon, 61100 Flers', MARGIN + 38, PAGE_HEIGHT - 50, 9, font, SLATE_400)
+  textRight('DEVIS', PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 43, 24, bold, ORANGE)
+
+  // Numéro de devis (champ)
+  fieldZone('NUMÉRO', 'numero', PAGE_WIDTH - MARGIN - 170, PAGE_HEIGHT - 60, 170, 26)
+
+  let cursorY = PAGE_HEIGHT - headerHeight - 24
+
+  // ---- Bloc CLIENT ----
+  text('CLIENT', MARGIN, cursorY, 9, bold, NAVY)
+  cursorY -= 12
+  fieldZone('Nom, société, téléphone, email, adresse', 'client', MARGIN, cursorY, CONTENT_WIDTH, 92)
+  cursorY -= 92 + 18
+
+  // ---- Bloc INTERVENTION ----
+  text('INTERVENTION', MARGIN, cursorY, 9, bold, NAVY)
+  cursorY -= 12
+  fieldZone('Date, créneau, surface, type de toiture, état, accès', 'intervention', MARGIN, cursorY, CONTENT_WIDTH, 80)
+  cursorY -= 80 + 18
+
+  // ---- Bloc DESCRIPTION ----
+  text('DESCRIPTION', MARGIN, cursorY, 9, bold, NAVY)
+  cursorY -= 12
+  fieldZone('Description de la demande', 'description', MARGIN, cursorY, CONTENT_WIDTH, 56)
+  cursorY -= 56 + 18
+
+  // ---- Bloc PRIX ----
+  text('DÉTAIL DU PRIX', MARGIN, cursorY, 9, bold, NAVY)
+  cursorY -= 12
+  fieldZone('Honoraires, déplacement, total HT, TVA, TOTAL TTC', 'prix', MARGIN, cursorY, CONTENT_WIDTH, 92)
+  cursorY -= 92 + 18
+
+  // ---- Mention légale (fixe) ----
+  const legal = 'Ce devis est valable 30 jours. La signature électronique vaut acceptation des conditions générales de vente.'
+  for (const line of wrapText(legal, font, 8, CONTENT_WIDTH)) {
+    text(line, MARGIN, cursorY, 8, font, SLATE_400)
+    cursorY -= 11
+  }
+  cursorY -= 10
+
+  // ---- Zone de SIGNATURE (champ) ----
+  text('SIGNATURE DU CLIENT — Bon pour accord', MARGIN, cursorY, 9, bold, SLATE_700)
+  cursorY -= 12
+  fieldZone('Zone de signature', 'Signature', MARGIN, cursorY, 240, 70)
+
+  // ---- Pied de page (fixe) ----
+  rect(0, 0, PAGE_WIDTH, 24, NAVY)
+  const footer = 'NORMANDIE ÉTANCHÉITÉ — 16 Impasse Beau Vallon, 61100 Flers — normandie-etancheite.fr'
+  const footerWidth = font.widthOfTextAtSize(footer, 8)
+  text(footer, (PAGE_WIDTH - footerWidth) / 2, 9, 8, font, SLATE_400)
+
+  return pdfDoc.saveAsBase64()
+}

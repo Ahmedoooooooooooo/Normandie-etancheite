@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { DevisData, generateDevisPdf } from './generateDevisPdf'
+import { DevisData } from './generateDevisPdf'
 
 type View = 'quote' | 'requesting' | 'success' | 'error'
 
@@ -26,13 +26,12 @@ export default function DevisPage() {
     if (!devis) return
     setView('requesting')
     try {
-      const pdf_base64 = await generateDevisPdf(devis)
       const res = await fetch(
         'https://n8n.srv1591454.hstgr.cloud/webhook/docuseal-create',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...devis, pdf_base64 }),
+          body: JSON.stringify(devis),
         }
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
