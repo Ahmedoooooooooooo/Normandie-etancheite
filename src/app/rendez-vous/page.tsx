@@ -390,11 +390,10 @@ export default function RendezVousPage() {
       <nav className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xs">N</span>
-            </div>
-            <span className="text-[#1e3a5f] font-bold text-sm">
-              Normandie <span className="text-orange-500">Étanchéité</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/Normandie-etancheite/logo-navy.png" alt="Normandie Étanchéité" className="h-7 w-auto" />
+            <span className="text-brand-blue font-bold text-sm">
+              Normandie <span className="text-sage-700">Étanchéité</span>
             </span>
           </Link>
           <span className="text-slate-400 text-sm">Prise de rendez-vous</span>
@@ -403,7 +402,7 @@ export default function RendezVousPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-10">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-[#1e3a5f] mb-1">Demande de devis &amp; rendez-vous</h1>
+          <h1 className="text-2xl font-bold text-brand-blue mb-1">Demande de devis &amp; rendez-vous</h1>
           <p className="text-slate-500">
             Remplissez ce formulaire : nous calculons votre devis et planifions une expertise sur place
           </p>
@@ -412,7 +411,7 @@ export default function RendezVousPage() {
         <div className="bg-white rounded-2xl shadow-md p-8 space-y-10">
           {/* Coordonnées */}
           <section>
-            <h2 className="text-lg font-bold text-[#1e3a5f] mb-4">Vos coordonnées</h2>
+            <h2 className="text-lg font-bold text-brand-blue mb-4">Vos coordonnées</h2>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
@@ -422,7 +421,7 @@ export default function RendezVousPage() {
                   value={form.prenom}
                   onChange={(e) => set('prenom', e.target.value)}
                   placeholder="Jean"
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent"
                 />
               </div>
               <div>
@@ -432,7 +431,7 @@ export default function RendezVousPage() {
                   value={form.nom}
                   onChange={(e) => set('nom', e.target.value)}
                   placeholder="Dupont"
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent"
                 />
               </div>
             </div>
@@ -445,7 +444,7 @@ export default function RendezVousPage() {
                   value={form.telephone}
                   onChange={(e) => set('telephone', e.target.value)}
                   placeholder="06 12 34 56 78"
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent"
                 />
               </div>
               <div>
@@ -455,7 +454,7 @@ export default function RendezVousPage() {
                   value={form.email}
                   onChange={(e) => set('email', e.target.value)}
                   placeholder="jean@exemple.fr"
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent"
                 />
               </div>
             </div>
@@ -469,7 +468,7 @@ export default function RendezVousPage() {
                 value={form.societe}
                 onChange={(e) => set('societe', e.target.value)}
                 placeholder="Nom de votre entreprise"
-                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent"
               />
             </div>
 
@@ -483,7 +482,7 @@ export default function RendezVousPage() {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                 placeholder="12 rue de la Paix, 61000 Alençon"
                 autoComplete="off"
-                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent"
               />
               {showSuggestions && addressSuggestions.length > 0 && (
                 <ul className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
@@ -498,7 +497,7 @@ export default function RendezVousPage() {
                           setAddressSuggestions([])
                           setShowSuggestions(false)
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-orange-50 transition-colors"
+                        className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-sage-50 transition-colors"
                       >
                         {s.label}
                       </button>
@@ -518,7 +517,7 @@ export default function RendezVousPage() {
 
           {/* Date & créneau */}
           <section>
-            <h2 className="text-lg font-bold text-[#1e3a5f] mb-4">Date et créneau du rendez-vous</h2>
+            <h2 className="text-lg font-bold text-brand-blue mb-4">Date et créneau du rendez-vous</h2>
 
             <DateTimePicker
               date={form.date}
@@ -539,7 +538,7 @@ export default function RendezVousPage() {
 
           {/* Chantier */}
           <section>
-            <h2 className="text-lg font-bold text-[#1e3a5f] mb-4">Votre chantier</h2>
+            <h2 className="text-lg font-bold text-brand-blue mb-4">Votre chantier</h2>
 
             <div className="mb-4">
               <label className="block text-sm font-semibold text-slate-700 mb-2">Surface approximative (m²) *</label>
@@ -549,7 +548,7 @@ export default function RendezVousPage() {
                 value={form.surface_m2 || ''}
                 onChange={(e) => set('surface_m2', parseInt(e.target.value) || 0)}
                 placeholder="Ex : 120"
-                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent"
               />
             </div>
 
@@ -559,7 +558,7 @@ export default function RendezVousPage() {
                 <select
                   value={form.type_toiture}
                   onChange={(e) => set('type_toiture', e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent bg-white"
                 >
                   <option value="">Sélectionner</option>
                   {['Ardoise', 'Tuile', 'Zinc', 'Bitume', 'EPDM', 'Autre'].map((t) => (
@@ -572,7 +571,7 @@ export default function RendezVousPage() {
                 <select
                   value={form.etat_general}
                   onChange={(e) => set('etat_general', e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent bg-white"
                 >
                   <option value="">Sélectionner</option>
                   {['Bon état', 'Dégradé', 'Mauvais état', 'À rénover'].map((e) => (
@@ -585,7 +584,7 @@ export default function RendezVousPage() {
                 <select
                   value={form.accessibilite}
                   onChange={(e) => set('accessibilite', e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent bg-white"
                 >
                   <option value="">Sélectionner</option>
                   {['Facile', 'Difficile', 'Très difficile'].map((a) => (
@@ -604,7 +603,7 @@ export default function RendezVousPage() {
                 onChange={(e) => set('description', e.target.value)}
                 rows={4}
                 placeholder="Décrivez le problème ou les travaux souhaités..."
-                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent resize-none"
               />
             </div>
           </section>
@@ -614,7 +613,7 @@ export default function RendezVousPage() {
             <button
               onClick={handleSubmit}
               disabled={!formValid() || loading}
-              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold px-8 py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-sage hover:bg-sage-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold px-8 py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

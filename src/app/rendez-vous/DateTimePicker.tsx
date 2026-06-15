@@ -107,7 +107,7 @@ export default function DateTimePicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`w-full text-left border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ${
+        className={`w-full text-left border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent ${
           date ? 'text-slate-700' : 'text-slate-400'
         }`}
       >
@@ -158,8 +158,8 @@ export default function DateTimePicker({
                     disabled
                       ? 'text-slate-200 cursor-not-allowed'
                       : isSelected
-                      ? 'bg-orange-500 text-white font-semibold'
-                      : 'text-slate-600 hover:bg-orange-50'
+                      ? 'bg-sage text-white font-semibold'
+                      : 'text-slate-600 hover:bg-sage-50'
                   }`}
                 >
                   {d.getDate()}
@@ -171,7 +171,7 @@ export default function DateTimePicker({
           {date && (
             <div className="border-t border-slate-100 pt-3">
               {dayClosure === 'afternoon' && (
-                <p className="text-xs text-orange-500 mb-2">
+                <p className="text-xs text-sage-700 mb-2">
                   Pas de rendez-vous l&apos;après-midi le mercredi (sauf 12h) — seuls les créneaux du matin et 12h sont disponibles.
                 </p>
               )}
@@ -194,8 +194,8 @@ export default function DateTimePicker({
                         disabled
                           ? 'border-slate-100 text-slate-300 bg-slate-50 cursor-not-allowed'
                           : heure === slot
-                          ? 'bg-orange-500 border-orange-500 text-white'
-                          : 'border-slate-200 text-slate-600 hover:border-orange-300 hover:text-orange-500'
+                          ? 'bg-sage border-sage text-white'
+                          : 'border-slate-200 text-slate-600 hover:border-sage hover:text-sage-700'
                       }`}
                     >
                       {slot}
