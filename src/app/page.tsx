@@ -113,7 +113,6 @@ export default function HomePage() {
                 </svg>
               </div>
               <h3 className="font-bold text-brand-blue text-lg mb-2">Devis gratuit</h3>
-              <p className="text-slate-500 text-sm">Estimation sans engagement, transparente et détaillée sous 24h</p>
             </div>
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-4">
@@ -122,7 +121,6 @@ export default function HomePage() {
                 </svg>
               </div>
               <h3 className="font-bold text-brand-blue text-lg mb-2">Intervention rapide</h3>
-              <p className="text-slate-500 text-sm">Disponible 6j/7, urgences traitées en priorité absolue</p>
             </div>
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-4">
@@ -131,7 +129,6 @@ export default function HomePage() {
                 </svg>
               </div>
               <h3 className="font-bold text-brand-blue text-lg mb-2">Garantie décennale</h3>
-              <p className="text-slate-500 text-sm">Assurance décennale et responsabilité civile professionnelle</p>
             </div>
           </div>
         </div>
