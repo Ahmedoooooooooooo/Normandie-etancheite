@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#6b7280"/><stop offset="1" stop-color="#3f4651"/></linearGradient></defs>
+  <rect width="800" height="600" fill="url(#g)"/>
+  <g opacity="0.25" stroke="#1f2937" stroke-width="3">
+    <path d="M0 180 L800 140 M0 320 L800 290 M0 460 L800 440"/>
+    <path d="M180 0 L150 600 M420 0 L400 600 M650 0 L640 600"/></g>
+  <text x="400" y="300" font-family="Arial" font-size="64" font-weight="bold" fill="#ffffff" opacity="0.9" text-anchor="middle">AVANT</text>
+  <text x="400" y="350" font-family="Arial" font-size="24" fill="#e5e7eb" text-anchor="middle">Toiture terrasse — Flers</text>
+  <text x="400" y="560" font-family="Arial" font-size="18" fill="#cbd5e1" text-anchor="middle" opacity="0.8">Remplacez par votre photo « avant »</text>
+</svg>

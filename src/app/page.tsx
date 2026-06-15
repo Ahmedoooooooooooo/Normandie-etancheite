@@ -1,7 +1,29 @@
 import Link from 'next/link'
+import BeforeAfterSlider from './BeforeAfterSlider'
 
 const LOGO_NAVY = '/Normandie-etancheite/logo-navy.png'
 const LOGO_WHITE = '/Normandie-etancheite/logo-white.png'
+
+const PORTFOLIO = [
+  {
+    before: '/Normandie-etancheite/portfolio/chantier-1-avant.svg',
+    after: '/Normandie-etancheite/portfolio/chantier-1-apres.svg',
+    title: 'Toiture terrasse',
+    location: 'Flers (61)',
+  },
+  {
+    before: '/Normandie-etancheite/portfolio/chantier-2-avant.svg',
+    after: '/Normandie-etancheite/portfolio/chantier-2-apres.svg',
+    title: 'Couverture ardoise',
+    location: 'Caen (14)',
+  },
+  {
+    before: '/Normandie-etancheite/portfolio/chantier-3-avant.svg',
+    after: '/Normandie-etancheite/portfolio/chantier-3-apres.svg',
+    title: 'Étanchéité bac acier',
+    location: 'Argentan (61)',
+  },
+]
 
 export default function HomePage() {
   return (
@@ -34,7 +56,7 @@ export default function HomePage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={LOGO_WHITE} alt="Normandie Étanchéité" className="h-20 w-auto mx-auto mb-8" />
           <div className="inline-block bg-sage text-white text-sm font-semibold px-4 py-1 rounded-full mb-6">
-            Artisan certifié • Devis gratuit
+            Devis gratuit • Intervention rapide
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
             Expert en étanchéité<br />
@@ -44,7 +66,7 @@ export default function HomePage() {
             Couverture · Étanchéité · Rénovation
           </p>
           <p className="text-slate-400 mb-10 max-w-2xl mx-auto">
-            Protégez votre toiture avec un artisan local de confiance. Intervention rapide dans tout le Calvados et l&apos;Orne.
+            Protégez votre toiture avec un artisan local de confiance. Interventions dans toute la Normandie.
           </p>
           <Link
             href="/rendez-vous"
@@ -55,50 +77,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Services */}
+      {/* Portfolio / Avant - Après */}
       <section className="py-20 px-4 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-brand-blue mb-3">Nos prestations</h2>
-            <p className="text-slate-500 text-lg">Des solutions durables pour votre toiture</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-brand-blue mb-3">Nos chantiers</h2>
+            <p className="text-slate-500 text-lg">Glissez le curseur pour découvrir l&apos;avant / après</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card 1 */}
-            <div className="bg-white rounded-2xl shadow-md p-8 border border-slate-100 hover:shadow-lg transition-shadow duration-200">
-              <div className="w-14 h-14 bg-sage-50 rounded-xl flex items-center justify-center mb-5">
-                <svg className="w-7 h-7 text-sage-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-brand-blue mb-3">Étanchéité toiture</h3>
-              <p className="text-slate-500 leading-relaxed">
-                Traitement des fuites, pose de membranes d&apos;étanchéité, isolation sous toiture. Intervention sur tous types de toitures plates et terrasses.
-              </p>
-            </div>
-            {/* Card 2 */}
-            <div className="bg-white rounded-2xl shadow-md p-8 border border-slate-100 hover:shadow-lg transition-shadow duration-200">
-              <div className="w-14 h-14 bg-sage-50 rounded-xl flex items-center justify-center mb-5">
-                <svg className="w-7 h-7 text-sage-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-brand-blue mb-3">Couverture ardoise &amp; tuile</h3>
-              <p className="text-slate-500 leading-relaxed">
-                Pose, réfection et entretien de toitures en ardoise naturelle ou artificielle et en tuiles. Travail soigné dans le respect des traditions normandes.
-              </p>
-            </div>
-            {/* Card 3 */}
-            <div className="bg-white rounded-2xl shadow-md p-8 border border-slate-100 hover:shadow-lg transition-shadow duration-200">
-              <div className="w-14 h-14 bg-sage-50 rounded-xl flex items-center justify-center mb-5">
-                <svg className="w-7 h-7 text-sage-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-brand-blue mb-3">Rénovation &amp; urgences</h3>
-              <p className="text-slate-500 leading-relaxed">
-                Réparation d&apos;urgence après tempête ou sinistre, rénovation complète de toiture ancienne, nettoyage et traitement anti-mousse.
-              </p>
-            </div>
+            {PORTFOLIO.map((p) => (
+              <BeforeAfterSlider
+                key={p.title}
+                before={p.before}
+                after={p.after}
+                title={p.title}
+                location={p.location}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -110,7 +105,7 @@ export default function HomePage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-brand-blue mb-3">Pourquoi nous choisir ?</h2>
             <p className="text-slate-500 text-lg">La qualité et la confiance au cœur de notre métier</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,15 +127,6 @@ export default function HomePage() {
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-brand-blue text-lg mb-2">Artisan certifié</h3>
-              <p className="text-slate-500 text-sm">Qualibat RGE, maîtrise complète des normes DTU en vigueur</p>
-            </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
@@ -156,7 +142,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold text-brand-blue mb-3">Zone d&apos;intervention</h2>
-            <p className="text-slate-500 text-lg">Flers et 80 km alentour</p>
+            <p className="text-slate-500 text-lg">Basés à Flers, nous intervenons dans toute la Normandie</p>
           </div>
           <div className="bg-white rounded-2xl shadow-md p-8 border border-slate-100">
             <div className="flex flex-wrap gap-3 justify-center">
@@ -174,7 +160,7 @@ export default function HomePage() {
               ))}
             </div>
             <p className="text-center text-slate-400 text-sm mt-6">
-              Vous n&apos;êtes pas dans cette liste ? Contactez-nous, nous intervenons jusqu&apos;à 80 km de Flers.
+              Vous n&apos;êtes pas dans cette liste ? Contactez-nous, nous intervenons dans toute la Normandie.
             </p>
           </div>
         </div>
