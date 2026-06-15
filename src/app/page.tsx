@@ -6,10 +6,10 @@ const LOGO_WHITE = '/Normandie-etancheite/logo-white.png'
 
 const PORTFOLIO = [
   {
-    before: '/Normandie-etancheite/portfolio/chantier-1-avant.svg',
-    after: '/Normandie-etancheite/portfolio/chantier-1-apres.svg',
-    title: 'Toiture terrasse',
-    location: 'Flers (61)',
+    before: '/Normandie-etancheite/portfolio/chantier-1-avant.jpg',
+    after: '/Normandie-etancheite/portfolio/chantier-1-apres.jpg',
+    title: 'Étanchéité toiture industrielle',
+    location: 'Le Havre (76)',
   },
   {
     before: '/Normandie-etancheite/portfolio/chantier-2-avant.svg',
