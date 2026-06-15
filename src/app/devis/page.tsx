@@ -204,7 +204,7 @@ export default function DevisPage() {
             </div>
             <div className="sm:text-right">
               <p className="text-[10px] font-bold text-sage-700 uppercase tracking-wide mb-1">Pour</p>
-              <p className="font-bold text-brand-blue">{devis.prenom} {devis.nom}</p>
+              <p className="font-bold text-brand-blue">{devis.prenom} {devis.nom.toUpperCase()}</p>
               {devis.societe && <p className="text-slate-500 text-sm">{devis.societe}</p>}
               <p className="text-slate-500 text-sm">{devis.adresse}</p>
               <p className="text-slate-500 text-sm">{devis.telephone}</p>
