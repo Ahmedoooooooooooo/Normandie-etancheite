@@ -242,7 +242,7 @@ export async function generateDevisPdf(devis: DevisData): Promise<string> {
  * ouvrages, totaux avec bandeau TTC, signatures).
  *
  * Zones où Docuseal insère les champs (à placer dans l'éditeur) :
- *   numero, date, client, chantier, designation, montant_ht,
+ *   numero, date, client, chantier, surface, montant_ht,
  *   total_ht, tva, total_ttc, Signature
  */
 export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<string> {
@@ -271,8 +271,9 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
 
   // Colonnes du tableau
   const colDesX = MARGIN + 30
-  const colUniteR = MARGIN + 350
-  const colQteR = MARGIN + 430
+  const colSurfaceR = MARGIN + 305
+  const colUniteR = MARGIN + 390
+  const colQteR = MARGIN + 440
   const colHtR = RIGHT
 
   // ======================= EN-TÊTE =======================
@@ -335,6 +336,7 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
   const thY = chTop - 22 - 24
   text('N°', MARGIN, thY, 8, bold, SAGE_700)
   text('DÉSIGNATION DES OUVRAGES', colDesX, thY, 8, bold, SAGE_700)
+  textRight('M²', colSurfaceR, thY, 8, bold, SAGE_700)
   textRight('UNITÉ', colUniteR, thY, 8, bold, SAGE_700)
   textRight('QTÉ', colQteR, thY, 8, bold, SAGE_700)
   textRight('TOTAL HT', colHtR, thY, 8, bold, SAGE_700)
@@ -342,9 +344,10 @@ export async function generateDevisTemplatePdf(logoPng?: Uint8Array): Promise<st
 
   const rowY = thY - 24
   text('01', MARGIN, rowY, 9, font, SLATE_400)
+  text("Expertise et diagnostic d'étanchéité de toiture", colDesX, rowY, 9, font, SLATE_700)
   textRight('forfait', colUniteR, rowY, 9, font, SLATE_700)
   textRight('1', colQteR, rowY, 9, font, SLATE_700)
-  // [CHAMP designation] -> (colDesX, rowY+4) zone ~ largeur jusqu'à MARGIN+300, multi-lignes
+  // [CHAMP surface] -> aligné à droite sur colSurfaceR, base rowY
   // [CHAMP montant_ht] -> aligné à droite sur colHtR, base rowY
   hline(rowY - 16, MARGIN, RIGHT, SLATE_200, 0.5)
 

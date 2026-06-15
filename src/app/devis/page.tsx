@@ -221,30 +221,20 @@ export default function DevisPage() {
           <div className="px-6 sm:px-8 py-5">
             <div className="grid grid-cols-12 gap-2 border-b-2 border-sage pb-2 text-[10px] font-bold text-sage-700 uppercase tracking-wide">
               <div className="col-span-1">N°</div>
-              <div className="col-span-7">Désignation des ouvrages</div>
+              <div className="col-span-5">Désignation des ouvrages</div>
+              <div className="col-span-2 text-right">M²</div>
               <div className="col-span-1 text-right">Unité</div>
               <div className="col-span-1 text-right">Qté</div>
               <div className="col-span-2 text-right">Total HT</div>
             </div>
             <div className="grid grid-cols-12 gap-2 py-4 border-b border-slate-100">
               <div className="col-span-1 text-slate-400 text-sm">01</div>
-              <div className="col-span-7">
+              <div className="col-span-5">
                 <p className="font-semibold text-brand-blue text-sm">
-                  Expertise et diagnostic d&apos;étanchéité — toiture {devis.type_toiture}, {devis.surface_m2} m²
+                  Expertise et diagnostic d&apos;étanchéité de toiture
                 </p>
-                <p className="text-slate-500 text-xs mt-1">
-                  Intervention le {devis.date_formatee} ({devis.heure}) · Accès : {devis.accessibilite}
-                </p>
-                {devis.etat_general && (
-                  <p className="text-slate-500 text-xs">État constaté : {devis.etat_general}</p>
-                )}
-                <p className="text-slate-500 text-xs">
-                  Honoraires : {eur(devis.devis_honoraires)} · Déplacement {devis.devis_distance_km} km : {eur(devis.devis_deplacement)}
-                </p>
-                {devis.description && (
-                  <p className="text-slate-500 text-xs mt-1 italic">{devis.description}</p>
-                )}
               </div>
+              <div className="col-span-2 text-right text-slate-600 text-sm">{devis.surface_m2} m²</div>
               <div className="col-span-1 text-right text-slate-600 text-sm">forfait</div>
               <div className="col-span-1 text-right text-slate-600 text-sm">1</div>
               <div className="col-span-2 text-right font-semibold text-slate-700 text-sm">{eur(devis.devis_total_ht)}</div>
