@@ -6,8 +6,8 @@ const LOGO_WHITE = '/Normandie-etancheite/logo-white.png'
 
 const PORTFOLIO = [
   {
-    before: '/Normandie-etancheite/portfolio/chantier-1-avant.jpg',
-    after: '/Normandie-etancheite/portfolio/chantier-1-apres.jpg',
+    before: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781550512/dji_fly_20260512_140552_127_1781393593165_video_-_frame_at_0m34s_hsgzej.jpg',
+    after: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781550910/dji_fly_20260527_180834_160_1781394823108_video_-_frame_at_0m1s_py5jke.jpg',
     title: 'Étanchéité toiture industrielle',
     location: 'Le Havre (76)',
   },
