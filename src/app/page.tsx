@@ -72,7 +72,7 @@ export default function HomePage() {
             href="/rendez-vous"
             className="inline-block bg-sage hover:bg-sage-700 text-white font-bold px-10 py-4 rounded-xl text-lg transition-colors duration-200 shadow-lg"
           >
-            Demander un devis gratuit →
+            Prendre rendez-vous →
           </Link>
         </div>
       </section>
@@ -139,7 +139,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold text-brand-blue mb-3">Zone d&apos;intervention</h2>
-            <p className="text-slate-500 text-lg">Basés à Flers, nous intervenons dans toute la Normandie</p>
+            <p className="text-slate-500 text-lg">De la Manche au Calvados, de l&apos;Orne à la Seine-Maritime</p>
           </div>
           <div className="bg-white rounded-2xl shadow-md p-8 border border-slate-100">
             <div className="flex flex-wrap gap-3 justify-center">
@@ -179,7 +179,7 @@ export default function HomePage() {
           >
             Prendre rendez-vous gratuitement →
           </Link>
-          <p className="text-slate-400 text-sm mt-6">Sans engagement · Réponse sous 24h · Artisan local</p>
+          <p className="text-slate-400 text-sm mt-6">Sans engagement · Prise de rendez-vous immédiate · Artisan local</p>
         </div>
       </section>
 
