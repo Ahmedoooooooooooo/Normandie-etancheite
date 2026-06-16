@@ -186,7 +186,7 @@ export default function RendezVousPage() {
   const router = useRouter()
   const [form, setForm] = useState<FormData>(defaultForm)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
 
   const [addressCoords, setAddressCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [geocoding, setGeocoding] = useState(false)
@@ -326,25 +326,30 @@ export default function RendezVousPage() {
     }
   }, [form.date, form.heure, unavailableSlots, dayClosure])
 
-  function formValid() {
-    return (
-      form.prenom.trim() !== '' &&
-      form.nom.trim() !== '' &&
-      form.telephone.trim() !== '' &&
-      form.email.trim() !== '' &&
-      form.adresse.trim() !== '' &&
-      form.date !== '' &&
-      form.heure !== '' &&
-      form.surface_m2 > 0 &&
-      form.type_toiture !== '' &&
-      form.etat_general !== '' &&
-      form.accessibilite !== ''
-    )
+  function getMissingFields(): string[] {
+    const missing: string[] = []
+    if (!form.prenom.trim()) missing.push('Prénom')
+    if (!form.nom.trim()) missing.push('Nom')
+    if (!form.telephone.trim()) missing.push('Numéro de téléphone')
+    if (!form.email.trim()) missing.push('Email')
+    if (!form.adresse.trim()) missing.push('Adresse du chantier')
+    if (!form.date) missing.push('Date du rendez-vous')
+    if (!form.heure) missing.push('Heure du rendez-vous')
+    if (!form.surface_m2 || form.surface_m2 <= 0) missing.push('Surface de la toiture (m²)')
+    if (!form.type_toiture) missing.push('Type de toiture')
+    if (!form.etat_general) missing.push('État général')
+    if (!form.accessibilite) missing.push('Accessibilité')
+    return missing
   }
 
   async function handleSubmit() {
+    const missing = getMissingFields()
+    if (missing.length > 0) {
+      setValidationErrors(missing)
+      return
+    }
+    setValidationErrors([])
     setLoading(true)
-    setError('')
 
     let coords = addressCoords
     if (!coords) {
@@ -627,10 +632,20 @@ export default function RendezVousPage() {
 
           {/* Soumission */}
           <div className="pt-2 border-t border-slate-100">
+            {validationErrors.length > 0 && (
+              <div className="mb-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                <p className="text-red-600 text-sm font-semibold mb-1">Merci de renseigner les champs manquants :</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  {validationErrors.map((e) => (
+                    <li key={e} className="text-red-500 text-sm">{e}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <button
               onClick={handleSubmit}
-              disabled={!formValid() || loading}
-              className="w-full bg-sage hover:bg-sage-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold px-8 py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+              disabled={loading}
+              className="w-full bg-sage hover:bg-sage-700 disabled:opacity-60 text-white font-bold px-8 py-4 rounded-xl text-base transition-colors flex items-center justify-center gap-2 shadow-md"
             >
               {loading ? (
                 <>
@@ -649,7 +664,6 @@ export default function RendezVousPage() {
                 </>
               )}
             </button>
-            {error && <p className="text-red-500 text-sm mt-3 text-center">{error}</p>}
           </div>
           </div>{/* end p-8 space-y-10 */}
         </div>{/* end bg-white card */}
