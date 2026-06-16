@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Docuseal envoie l'evenement form.completed apres signature.\n// Les metadonnees du rendez-vous sont dans data.metadata (posees a la creation).\nconst body = $json.body || $json;\nconst data = body.data || {};\nconst meta = data.metadata || {};\n\n// Si l'evenement ne provient pas de notre flux (pas de date), on ignore.\nif (!meta.date || !meta.heure) {\n  return [];\n}\n\n// Dates de debut/fin au format Zoho Calendar (gere automatiquement\n// l'heure d'ete / hiver via le fuseau Europe/Paris).\nconst start = DateTime.fromISO(`${meta.date}T${meta.heure}`, { zone: 'Europe/Paris' });\nconst end = start.plus({ hours: 1 });\nconst zohoFmt = \"yyyyLLdd'T'HHmmssZZZ\";\n\nconst eventdata = JSON.stringify({\n  dateandtime: {\n    timezone: 'Europe/Paris',\n    start: start.toFormat(zohoFmt),\n    end: end.toFormat(zohoFmt),\n  },\n  title: `Devis - ${meta.devis_numero || ''}-${meta.prenom || ''} ${meta.nom || ''}`.trim(),\n  location: meta.adresse || '',\n  description: `Client: ${meta.prenom || ''} ${meta.nom || ''}\\nTel: ${meta.telephone || ''}\\nEmail: ${meta.email || ''}\\nSurface: ${meta.surface_m2 || ''} m2\\nType: ${meta.type_toiture || ''}\\nDevis: ${meta.devis_total_ttc || ''} EUR`,\n  isallday: false,\n});\n\nreturn [{ json: { eventdata } }];"
+        "jsCode": "// Docuseal envoie l'evenement form.completed apres signature.\n// Les metadonnees du rendez-vous sont dans data.metadata.\nconst body = $json.body || $json;\nconst data = body.data || {};\nconst meta = data.metadata || {};\n\nif (!meta.date || !meta.heure) {\n  return [];\n}\n\nconst start = DateTime.fromISO(`${meta.date}T${meta.heure}`, { zone: 'Europe/Paris' });\nconst end = start.plus({ hours: 1 });\nconst zohoFmt = \"yyyyLLdd'T'HHmmssZZZ\";\n\nconst eventdata = JSON.stringify({\n  dateandtime: {\n    timezone: 'Europe/Paris',\n    start: start.toFormat(zohoFmt),\n    end: end.toFormat(zohoFmt),\n  },\n  title: `Devis - ${meta.devis_numero || ''} - ${meta.prenom || ''} ${meta.nom || ''}`.trim(),\n  location: meta.adresse || '',\n  description: `Client: ${meta.prenom || ''} ${meta.nom || ''}\\nTel: ${meta.telephone || ''}\\nEmail: ${meta.email || ''}\\nSurface: ${meta.surface_m2 || ''} m2\\nType: ${meta.type_toiture || ''}\\nDevis: ${meta.devis_total_ttc || ''} EUR`,\n  isallday: false,\n});\n\n// Rappel 45 min apres le debut = 15 min avant la fin du RDV d'1h\nconst reminderTime = start.plus({ minutes: 45 }).toISO();\n\nreturn [{ json: {\n  eventdata,\n  reminderTime,\n  prenom: meta.prenom || '',\n  nom: meta.nom || '',\n  adresse: meta.adresse || '',\n  telephone: meta.telephone || '',\n  devis_numero: meta.devis_numero || '',\n  heure: meta.heure || '',\n  date: meta.date || '',\n}}];"
       },
       "id": "b2c3d4e5-f6a7-8901-bcde-f12345670012",
       "name": "Parse Metadata",
@@ -58,6 +58,48 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Attend que reminderTime soit atteint (45 min apres debut = 15 min avant fin)\nconst { reminderTime, prenom, nom, adresse, telephone, devis_numero, heure, date } = $json;\nif (!reminderTime) return [];\nreturn [{ json: { reminderTime, prenom, nom, adresse, telephone, devis_numero, heure, date } }];"
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "Prep Rappel",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 480]
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ $json.reminderTime }}"
+      },
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "Attente 15 min avant fin",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [910, 480],
+      "webhookId": "f6a7b8c9-d0e1-2345-fabc-456789012345"
+    },
+    {
+      "parameters": {
+        "fromEmail": "contact@normandie-etancheite.com",
+        "toEmail": "contact@normandie-etancheite.com",
+        "subject": "=⏰ RDV se termine dans 15 min — {{ $json.prenom }} {{ $json.nom }}",
+        "text": "=Bonjour,\n\nVotre expertise chez {{ $json.prenom }} {{ $json.nom }} se termine dans 15 minutes.\n\nAdresse : {{ $json.adresse }}\nTéléphone : {{ $json.telephone }}\nDevis : {{ $json.devis_numero }}\nHeure du RDV : {{ $json.heure }}\n\nPensez à conclure et à préparer votre prochain rendez-vous.\n\n— Normandie Étanchéité",
+        "options": {}
+      },
+      "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
+      "name": "Rappel artisan",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1130, 480],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "Zoho Mail SMTP"
+        }
+      }
     }
   ],
   "connections": {
@@ -65,10 +107,21 @@
       "main": [[{ "node": "Parse Metadata", "type": "main", "index": 0 }]]
     },
     "Parse Metadata": {
-      "main": [[{ "node": "Zoho Calendar - Create Event", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          { "node": "Zoho Calendar - Create Event", "type": "main", "index": 0 },
+          { "node": "Prep Rappel", "type": "main", "index": 0 }
+        ]
+      ]
     },
     "Zoho Calendar - Create Event": {
       "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    },
+    "Prep Rappel": {
+      "main": [[{ "node": "Attente 15 min avant fin", "type": "main", "index": 0 }]]
+    },
+    "Attente 15 min avant fin": {
+      "main": [[{ "node": "Rappel artisan", "type": "main", "index": 0 }]]
     }
   },
   "active": false,
