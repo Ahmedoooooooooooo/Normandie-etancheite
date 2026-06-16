@@ -583,7 +583,7 @@ export default function RendezVousPage() {
                   className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent bg-white"
                 >
                   <option value="">Sélectionner</option>
-                  {['Ardoise', 'Tuile', 'Zinc', 'Bitume', 'EPDM', 'Autre'].map((t) => (
+                  {['Étanchéité bitume', 'Étanchéité membrane PVC', 'Bac sec', 'Panneau sandwich', 'Autre'].map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
@@ -609,7 +609,7 @@ export default function RendezVousPage() {
                   className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sage focus:border-transparent bg-white"
                 >
                   <option value="">Sélectionner</option>
-                  {['Facile', 'Difficile', 'Très difficile'].map((a) => (
+                  {['Échelle crinoline', 'Nacelle', 'Lanternaux d\'accès', 'Escalier', 'Autre'].map((a) => (
                     <option key={a} value={a}>{a}</option>
                   ))}
                 </select>
