@@ -164,39 +164,43 @@ export default function HomePage() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-20 px-4 bg-brand-blue text-white relative overflow-hidden">
+      <section className="py-24 px-4 relative overflow-hidden" style={{background: 'linear-gradient(135deg, #1e3a5f 0%, #7BA89B 100%)'}}>
         {/* Cercles décoratifs */}
-        <div className="absolute -top-20 -left-20 w-72 h-72 bg-sage opacity-10 rounded-full pointer-events-none" />
-        <div className="absolute -bottom-24 -right-16 w-96 h-96 bg-sage opacity-10 rounded-full pointer-events-none" />
+        <div className="absolute top-0 left-0 w-80 h-80 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full translate-x-1/3 translate-y-1/3 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-sage opacity-20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center relative">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-2">Prêt à démarrer votre projet ?</h2>
-          <div className="w-16 h-1 bg-sage rounded-full mx-auto mt-3 mb-6" />
-          <p className="text-slate-300 text-lg mb-8">
+          <div className="inline-block bg-white/20 text-white text-sm font-semibold px-4 py-1 rounded-full mb-6 backdrop-blur-sm border border-white/30">
+            Normandie Étanchéité
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">Prêt à démarrer votre projet ?</h2>
+          <div className="w-16 h-1 bg-white/60 rounded-full mx-auto mb-6" />
+          <p className="text-white/80 text-lg mb-10">
             Contactez-nous dès aujourd&apos;hui pour un devis gratuit et sans engagement.
           </p>
 
           {/* Badges */}
           <div className="flex flex-wrap justify-center gap-3 mb-10">
-            <span className="bg-sage/20 border border-sage text-sage-50 text-sm font-semibold px-4 py-2 rounded-full">
+            <span className="bg-white/15 backdrop-blur-sm border border-white/40 text-white text-sm font-semibold px-5 py-2 rounded-full">
               ✓ Devis gratuit
             </span>
-            <span className="bg-sage/20 border border-sage text-sage-50 text-sm font-semibold px-4 py-2 rounded-full">
+            <span className="bg-white/15 backdrop-blur-sm border border-white/40 text-white text-sm font-semibold px-5 py-2 rounded-full">
               ✓ Réponse rapide
             </span>
-            <span className="bg-sage/20 border border-sage text-sage-50 text-sm font-semibold px-4 py-2 rounded-full">
+            <span className="bg-white/15 backdrop-blur-sm border border-white/40 text-white text-sm font-semibold px-5 py-2 rounded-full">
               ✓ Garantie décennale
             </span>
           </div>
 
           <Link
             href="/rendez-vous"
-            className="inline-block bg-sage hover:bg-sage-700 text-white font-bold px-12 py-4 rounded-xl text-lg transition-colors duration-200 shadow-lg"
+            className="inline-block bg-white text-brand-blue hover:bg-slate-100 font-bold px-12 py-4 rounded-xl text-lg transition-colors duration-200 shadow-xl"
           >
             Prendre rendez-vous gratuitement →
           </Link>
-          <p className="text-slate-400 text-sm mt-6">Sans engagement · Prise de rendez-vous immédiate · Artisan local</p>
-          <p className="text-slate-500 text-sm mt-2">16 Impasse Beau Vallon, 61100 Flers</p>
+          <p className="text-white/50 text-sm mt-6">Sans engagement · Prise de rendez-vous immédiate · Artisan local</p>
+          <p className="text-white/40 text-sm mt-2">16 Impasse Beau Vallon, 61100 Flers</p>
         </div>
       </section>
 
