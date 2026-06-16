@@ -164,15 +164,31 @@ export default function HomePage() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-20 px-4 bg-brand-blue text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Prêt à démarrer votre projet ?</h2>
-          <p className="text-slate-300 text-lg mb-3">
+      <section className="py-20 px-4 bg-brand-blue text-white relative overflow-hidden">
+        {/* Cercles décoratifs */}
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-sage opacity-10 rounded-full pointer-events-none" />
+        <div className="absolute -bottom-24 -right-16 w-96 h-96 bg-sage opacity-10 rounded-full pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto text-center relative">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-2">Prêt à démarrer votre projet ?</h2>
+          <div className="w-16 h-1 bg-sage rounded-full mx-auto mt-3 mb-6" />
+          <p className="text-slate-300 text-lg mb-8">
             Contactez-nous dès aujourd&apos;hui pour un devis gratuit et sans engagement.
           </p>
-          <p className="text-slate-400 mb-10">
-            16 Impasse Beau Vallon, 61100 Flers
-          </p>
+
+          {/* Badges */}
+          <div className="flex flex-wrap justify-center gap-3 mb-10">
+            <span className="bg-sage/20 border border-sage text-sage-50 text-sm font-semibold px-4 py-2 rounded-full">
+              ✓ Devis gratuit
+            </span>
+            <span className="bg-sage/20 border border-sage text-sage-50 text-sm font-semibold px-4 py-2 rounded-full">
+              ✓ Réponse rapide
+            </span>
+            <span className="bg-sage/20 border border-sage text-sage-50 text-sm font-semibold px-4 py-2 rounded-full">
+              ✓ Garantie décennale
+            </span>
+          </div>
+
           <Link
             href="/rendez-vous"
             className="inline-block bg-sage hover:bg-sage-700 text-white font-bold px-12 py-4 rounded-xl text-lg transition-colors duration-200 shadow-lg"
@@ -180,6 +196,7 @@ export default function HomePage() {
             Prendre rendez-vous gratuitement →
           </Link>
           <p className="text-slate-400 text-sm mt-6">Sans engagement · Prise de rendez-vous immédiate · Artisan local</p>
+          <p className="text-slate-500 text-sm mt-2">16 Impasse Beau Vallon, 61100 Flers</p>
         </div>
       </section>
 
