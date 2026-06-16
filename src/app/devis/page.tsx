@@ -270,12 +270,23 @@ export default function DevisPage() {
             </p>
           </div>
 
-          {/* Signature client (centrée, comme le PDF) */}
+          {/* Signature client — bouton intégré */}
           <div className="border-t border-slate-100 px-6 sm:px-8 py-6 text-center">
             <p className="font-bold text-brand-blue mb-3">Bon pour accord — Signature du client</p>
-            <div className="mx-auto max-w-xs border border-sage rounded-lg bg-slate-50 p-4 text-left">
-              <p className="text-[10px] font-bold text-sage-700 uppercase tracking-wide">Signature</p>
-              <p className="text-slate-400 text-xs mt-6">À signer via le lien sécurisé reçu par email.</p>
+            <div className="mx-auto max-w-sm border border-sage rounded-xl bg-sage-50 p-5 text-center">
+              <p className="text-[10px] font-bold text-sage-700 uppercase tracking-wide mb-3">Signature</p>
+              <p className="text-slate-500 text-xs mb-4">
+                Signature en ligne avec valeur légale. Vous recevrez une copie signée par email et votre rendez-vous sera confirmé automatiquement.
+              </p>
+              <button
+                onClick={handleRequestSign}
+                className="w-full bg-sage hover:bg-sage-700 text-white font-bold py-3 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H8v-2.414a2 2 0 01.586-1.414z" />
+                </svg>
+                Signer électroniquement
+              </button>
             </div>
           </div>
 
@@ -283,25 +294,6 @@ export default function DevisPage() {
           <div className="border-t border-slate-100 py-3 text-center">
             <p className="text-xs text-sage-700">normandie-etancheite.com</p>
           </div>
-        </div>
-
-        {/* Action : signature électronique */}
-        <div className="bg-white rounded-2xl shadow-md p-8">
-          <h2 className="text-lg font-bold text-brand-blue mb-1">Signature électronique</h2>
-          <div className="bg-sage-50 border border-sage/30 rounded-xl p-4 my-4">
-            <p className="text-sage-700 text-sm">
-              La signature est réalisée en ligne, avec valeur légale. Vous recevrez une copie signée par email, et votre rendez-vous sera confirmé automatiquement.
-            </p>
-          </div>
-          <button
-            onClick={handleRequestSign}
-            className="w-full bg-sage hover:bg-sage-700 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-lg sm:w-auto sm:px-10"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H8v-2.414a2 2 0 01.586-1.414z" />
-            </svg>
-            Signer électroniquement
-          </button>
         </div>
       </div>
     </div>
