@@ -9,19 +9,19 @@ const PORTFOLIO = [
     before: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781550512/dji_fly_20260512_140552_127_1781393593165_video_-_frame_at_0m34s_hsgzej.jpg',
     after: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781550910/dji_fly_20260527_180834_160_1781394823108_video_-_frame_at_0m1s_py5jke.jpg',
     title: 'Étanchéité toiture industrielle',
-    location: 'Le Havre (76)',
+    location: 'Rénovation toiture',
   },
   {
     before: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781593128/b699e1fe-0609-4afb-9ae7-aa138c97438b_lyqpbq.jpg',
     after: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781593128/8c6e502b-4519-4ce7-af80-ee50d947a120_brm5gb.jpg',
-    title: 'Couverture ardoise',
-    location: 'Caen (14)',
+    title: 'Étanchéité PVC',
+    location: 'Rénovation toiture',
   },
   {
     before: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781594541/IMG_3848_diz09h.jpg',
     after: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781594541/IMG_3845_q3upzr.jpg',
-    title: 'Étanchéité bac acier',
-    location: 'Argentan (61)',
+    title: 'Panneau sandwich',
+    location: 'Rénovation toiture',
   },
 ]
 
