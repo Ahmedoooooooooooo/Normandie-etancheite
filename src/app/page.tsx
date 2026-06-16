@@ -12,14 +12,14 @@ const PORTFOLIO = [
     location: 'Le Havre (76)',
   },
   {
-    before: '/Normandie-etancheite/portfolio/chantier-2-avant.svg',
-    after: '/Normandie-etancheite/portfolio/chantier-2-apres.svg',
+    before: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781593128/b699e1fe-0609-4afb-9ae7-aa138c97438b_lyqpbq.jpg',
+    after: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781593128/8c6e502b-4519-4ce7-af80-ee50d947a120_brm5gb.jpg',
     title: 'Couverture ardoise',
     location: 'Caen (14)',
   },
   {
-    before: '/Normandie-etancheite/portfolio/chantier-3-avant.svg',
-    after: '/Normandie-etancheite/portfolio/chantier-3-apres.svg',
+    before: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781594541/IMG_3848_diz09h.jpg',
+    after: 'https://res.cloudinary.com/daevhiitx/image/upload/v1781594541/IMG_3845_q3upzr.jpg',
     title: 'Étanchéité bac acier',
     location: 'Argentan (61)',
   },
