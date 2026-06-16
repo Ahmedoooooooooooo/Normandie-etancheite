@@ -386,32 +386,43 @@ export default function RendezVousPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Nav */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+      {/* Header coloré */}
+      <div className="bg-brand-blue text-white">
+        <div className="max-w-4xl mx-auto px-4 py-5 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/Normandie-etancheite/logo-navy.png" alt="Normandie Étanchéité" className="h-7 w-auto" />
-            <span className="text-brand-blue font-bold text-sm">
-              Normandie <span className="text-sage-700">Étanchéité</span>
+            <img src="/Normandie-etancheite/logo-white.png" alt="Normandie Étanchéité" className="h-8 w-auto" />
+            <span className="font-bold text-white text-sm leading-tight">
+              Normandie<br /><span className="text-sage font-semibold">Étanchéité</span>
             </span>
           </Link>
-          <span className="text-slate-400 text-sm">Prise de rendez-vous</span>
+          <span className="text-white/60 text-sm hidden sm:block">Prise de rendez-vous</span>
         </div>
-      </nav>
-
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-brand-blue mb-1">Demande de devis &amp; rendez-vous</h1>
-          <p className="text-slate-500">
+        <div className="max-w-4xl mx-auto px-4 pb-8 pt-2 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Demande de devis &amp; rendez-vous</h1>
+          <p className="text-white/70 text-sm">
             Remplissez ce formulaire : nous calculons votre devis et planifions une expertise sur place
           </p>
+          <div className="flex flex-wrap justify-center gap-3 mt-4">
+            <span className="bg-white/10 border border-white/20 text-white/90 text-xs font-semibold px-3 py-1 rounded-full">✓ Devis gratuit</span>
+            <span className="bg-white/10 border border-white/20 text-white/90 text-xs font-semibold px-3 py-1 rounded-full">✓ Sans engagement</span>
+            <span className="bg-white/10 border border-white/20 text-white/90 text-xs font-semibold px-3 py-1 rounded-full">✓ Réponse rapide</span>
+          </div>
         </div>
+      </div>
 
-        <div className="bg-white rounded-2xl shadow-md p-8 space-y-10">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+          {/* Barre sage en haut de la carte */}
+          <div className="h-1.5 bg-gradient-to-r from-brand-blue via-sage to-sage-700" />
+
+          <div className="p-8 space-y-10">
           {/* Coordonnées */}
           <section>
-            <h2 className="text-lg font-bold text-brand-blue mb-4">Vos coordonnées</h2>
+            <h2 className="text-lg font-bold text-brand-blue mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-sage rounded-full inline-block" />
+              Vos coordonnées
+            </h2>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
@@ -517,7 +528,10 @@ export default function RendezVousPage() {
 
           {/* Date & créneau */}
           <section>
-            <h2 className="text-lg font-bold text-brand-blue mb-4">Date et créneau du rendez-vous</h2>
+            <h2 className="text-lg font-bold text-brand-blue mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-sage rounded-full inline-block" />
+              Date et créneau du rendez-vous
+            </h2>
 
             <DateTimePicker
               date={form.date}
@@ -538,7 +552,10 @@ export default function RendezVousPage() {
 
           {/* Chantier */}
           <section>
-            <h2 className="text-lg font-bold text-brand-blue mb-4">Votre chantier</h2>
+            <h2 className="text-lg font-bold text-brand-blue mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-sage rounded-full inline-block" />
+              Votre chantier
+            </h2>
 
             <div className="mb-4">
               <label className="block text-sm font-semibold text-slate-700 mb-2">Surface approximative (m²) *</label>
@@ -634,7 +651,8 @@ export default function RendezVousPage() {
             </button>
             {error && <p className="text-red-500 text-sm mt-3 text-center">{error}</p>}
           </div>
-        </div>
+          </div>{/* end p-8 space-y-10 */}
+        </div>{/* end bg-white card */}
       </div>
     </div>
   )
